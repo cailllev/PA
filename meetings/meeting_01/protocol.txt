@@ -10,6 +10,7 @@ Students
 -create a timeplan that can be discussed next week.
 -decide what tool to use regarding the paperwork of the PA (Office, Latex).
 -link papers and texts int he repisitory.
+-create meetingprotocolls/decisionprotocolls
 
 
 Supervisors
