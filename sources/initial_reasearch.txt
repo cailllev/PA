@@ -1,0 +1,39 @@
+https://scholar.google.com/scholar_lookup?title=Investigating%20the%20application%20of%20moving%20target%20defenses%20to%20network%20security&author=R.%20Zhuang&author=S.%20Zhang&author=A.%20Bardas&author=S.%20A.%20DeLoach&author=X.%20Ou&author=&author=A.%20Singhal
+Investigating the application of moving target defenses to network security
+79
+
+https://scholar.google.com/scholar_lookup?title=Evolving%20defense%20mechanism%20for%20future%20network%20security&author=H.%20Zhou&author=C.%20Wu&author=M.%20Jiang%20et%20al.&publication_year=2015
+Evolving defense mechanism for future network security
+31
+
+https://scholar.google.com/scholar_lookup?title=Game%20theory%20for%20network%20security&author=X.%20Liang%20&author=Y.%20Xiao&publication_year=2013
+Game theory for network security
+244
+
+https://scholar.google.com/scholar_lookup?title=Efficient%20random%20route%20mutation%20considering%20flow%20and%20network%20constraints&author=Q.%20Duan&author=E.%20Al-Shaer&author=&author=H.%20Jafarian
+Efficient random route mutation considering flow and network constraints
+93
+
+https://scholar.google.com/scholar_lookup?title=NOMAD:%20towards%20non-intrusive%20moving-target%20defense%20against%20web%20bots&author=S.%20Vikram&author=C.%20Yang&author=&author=G.%20Gu
+Nomad: Towards non-intrusive moving-target defense against web bots
+43
+
+https://scholar.google.com/scholar_lookup?title=Efficient%20provisioning%20of%20security%20service%20function%20chaining%20using%20network%20security%20defense%20patterns&author=A.%20Shameli%20Sendi&author=Y.%20Jarraya&author=M.%20Pourzandi&author=&author=M.%20Cheriet&publication_year=2017
+Efficient provisioning of security service function chaining using network security defense patterns
+45
+
+https://scholar.google.com/scholar_lookup?title=Predictability-oriented%20defense%20against%20adaptive%20adversaries&author=R.%20Colbaugh%20&author=K.%20Glass
+Predictability-oriented defense against adaptive adversaries
+45
+
+https://scholar.google.com/scholar_lookup?title=Capability%20of%20evolutionary%20cryptosystems%20against%20differential%20cryptanalysis&author=H.%20Zhang%20G&author=L.%20C.%20Li&author=&author=M.%20Tang&publication_year=2013
+[PDF] Capability of evolutionary cryptosystems against differential cryptanalysis
+15
+
+https://scholar.google.com/scholar_lookup?title=Artificial%20diversity%20as%20maneuvers%20in%20a%20control%20theoretic%20moving%20target%20defense&author=J.%20Rowe&author=N.%20K.%20Levitt&author=&author=T.%20Demir
+[PDF] Artificial diversity as maneuvers in a control theoretic moving target defense
+29
+
+https://scholar.google.com/scholar_lookup?title=Model-driven,%20moving-target%20defense%20for%20enterprise%20network%20security&author=S.%20A.%20DeLoach&author=X.%20Ou&author=R.%20Zhuang&author=&author=S.%20Zhang&publication_year=2014
+Model-driven, moving-target defense for enterprise network security
+33

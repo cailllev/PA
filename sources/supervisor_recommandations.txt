@@ -1,0 +1,29 @@
+https://arxiv.org/abs/1909.08092
+Toward Proactive, Adaptive Defense: A Survey on Moving Target Defense 
+
+https://ieeexplore.ieee.org/document/9172847
+DQ-MOTAG: Deep Reinforcement Learning-based Moving Target Defense Against DDoS Attacks 
+
+https://ieeexplore.ieee.org/document/8325528
+A POMDP Approach to the Dynamic Defense of Large-Scale Cyber Networks 
+
+https://dl.acm.org/doi/10.1145/2995272.2995280
+A Moving Target Defense Approach to Disrupting Stealthy Botnets 
+
+https://ieeexplore.ieee.org/document/7971943
+Deceiving Network Reconnaissance Using SDN-Based Virtual Topologies 
+
+https://ieeexplore.ieee.org/document/9172847
+Dependency Graph Analysis and Moving Target Defense Selection 
+
+https://ieeexplore.ieee.org/document/8754059
+Enforcing Optimal Moving Target Defense Policies 
+
+https://ieeexplore.ieee.org/document/6578785
+Moving Target Defense for Adaptive Adversaries 
+
+https://ieeexplore.ieee.org/document/7424300
+Optimizing Attack Surface and Configuration Diversity Using Multi-Objective Reinforcement Learning 
+
+https://link.springer.com/chapter/10.1007/978-3-030-01554-1_19
+Moving Target Defense for the Placement of Intrusion Detection Systems in the Cloud 
