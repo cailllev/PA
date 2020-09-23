@@ -1,0 +1,27 @@
+MTD Techniques:
+ - How to move:
+	- Shuffling
+	- Redundancy
+	- Diversity
+	- Hybrid
+ - When to move:
+	- Timebased
+	- Eventbased
+	- Hybrid
+ - What to move:
+	- instruction sets 
+	- address space layouts 
+	- IP addresses 
+	- port numbers 
+	- proxies 
+	- virtual machines 
+	- operating systems 
+	- software programs
+	
+Reinforcement Learning studies:
+Zhu et al. [167] proposed two iterative reinforcement learning algorithms to identify an ideal defense strategy against cyberattacks especially 
+when the information about the attackers is unknown or limited. They used Markov chains and stochastic stability in the algorithms by introducing the 
+adaptive, robust reinforcement learning capability. They showed that their method can provide the nearly optimal defensive strategy.
+
+Tozer et al. [149] proposed a multi-objective reinforcement learning algorithm to minimize the attack surface of a system. They designed a system to 
+generate a multi-objective Markov Decision Process using the system’s components and behaviors to identify optimal policies.

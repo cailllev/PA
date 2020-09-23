@@ -6,11 +6,11 @@ All
 Students
 ---------------
 -get a basic overview regarding different MTD approaches and reinforcements learning and "present" them next week.
--create a repository for informationexchange between students and supervisors.
+-create a repository for information exchange between students and supervisors.
 -create a timeplan that can be discussed next week.
 -decide what tool to use regarding the paperwork of the PA (Office, Latex).
--link papers and texts int he repisitory.
--create meetingprotocolls/decisionprotocolls
+-link papers and texts in the repisitory.
+-create meeting protocols and decision protocols.
 
 
 Supervisors
