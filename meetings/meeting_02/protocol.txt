@@ -1,15 +1,17 @@
 All
 ---------------
--
+-all tasks in the protocolls will no be meant to be completed until the next week/the next protocoll except a date is statet.
+-we decided to use office as tool for the main paperwork of the PA
 
 
 Students
 ---------------
 -get familiar with zotero or mendeley
 -create teams channel for our paper
+-get a better overview over reinforcement learning
 -work according to plan
 
 
 Supervisors
 ---------------
--
+-provide material as you see fit.
