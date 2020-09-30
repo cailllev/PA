@@ -1,0 +1,14 @@
+All
+---------------
+-the report will be in german.
+
+
+Students
+---------------
+-create a sources-library for easy overview over our sources.
+-work according to plan.
+
+
+Supervisors
+---------------
+-provide material as you see fit.
