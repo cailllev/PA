@@ -1,0 +1,15 @@
+All
+---------------
+-we will use a attack-modell to abstract the attack on a network. in this "framework" we will test machine-learning based mtds.
+
+
+Students
+---------------
+-get more feedback on the modell.
+-work according to plan.
+
+
+Supervisors
+---------------
+-provide material as you see fit.
+-provide alternate modelling-idea as you see fit.
