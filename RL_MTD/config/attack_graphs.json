@@ -1,0 +1,141 @@
+{
+  "simple_webservice": {
+    "nodes": {
+      "internet": {
+        "previous": null,
+        "next": {
+          "authorizer": {
+            "init": "pa0",
+            "dt": "dpa"
+          }
+        }
+      },
+      "authorizer": {
+        "previous": "internet",
+        "next": {
+          "planner": {
+            "init": "pp0",
+            "dt": "dpp"
+          },
+          "honeypot": {
+            "init": "pah0",
+            "dt": "dpah"
+          }
+        }
+      },
+      "honeypot_authorizer": {
+        "previous": "authorizer",
+        "next": {
+          "authorizer": {
+            "init": "pha0",
+            "dt": "dpha"
+          }
+        }
+      },
+      "planner": {
+        "previous": "authorizer",
+        "next": {
+          "DB1": {
+            "init": "pdb10",
+            "dt": "dpdb1"
+          },
+          "DB2": {
+            "init": "pdb20",
+            "dt": "dpdb2"
+          },
+          "DB3": {
+            "init": "pdb30",
+            "dt": "dpdb3"
+          },
+          "honeypot": {
+            "init": "pph0",
+            "dt": "dph"
+          }
+        }
+      },
+      "honeypot_planner": {
+        "previous": "planner",
+        "next": {
+          "planner": {
+            "init": "php0",
+            "dt": "dphp"
+          }
+        }
+      },
+      "DB1": {
+        "previous": "planner",
+        "next": {
+          "extracted_data": {
+            "init": 1,
+            "dt": 0
+          }
+        }
+      },
+      "DB2": {
+        "previous": "planner",
+        "next": {
+          "extracted_data": {
+            "init": 1,
+            "dt": 0
+          }
+        }
+      },
+      "DB3": {
+        "previous": "planner",
+        "next": {
+          "extracted_data": {
+            "init": 1,
+            "dt": 0
+          }
+        }
+      },
+      "extracted_data": {
+        "previous": null,
+        "next": {
+          "extracted_data": {
+            "init": 1,
+            "dt": 0
+          }
+        }
+      }
+    },
+    "services": {
+      "IDS": {
+        "count": 3,
+        "before_nodes": ["authorizer", "planner", "DB1", "DB2", "DB3"],
+        "catch_attacker_action": "internet",
+        "init": "pIDS0",
+        "dt": "dpIDS"
+      },
+      "PS": {
+        "count": 3,
+        "before_nodes": ["extracted_data"],
+        "catch_attacker_action": "internet",
+        "init": "pPS0",
+        "dt": "dpIDS"
+      }
+    },
+    "attacks": {
+      "simple": {
+        "pa0": 0.8,
+        "dpa": 0.01,
+        "pp0": 0.7,
+        "dpp": 0.01,
+        "pdb10": 0.6,
+        "dpdb1": 0.01,
+        "pdb20": 0.6,
+        "dpdb2": 0.01,
+        "pdb30": 0.6,
+        "dpdb3": 0.01,
+        "pah0": 0.1,
+        "dpah": -0.01,
+        "pha0": 0.0,
+        "dpha": 0.01,
+        "pph0": 0.0,
+        "dpph": 0.01,
+        "php0": 0.0,
+        "dphp": 0.01
+      }
+    }
+  }
+}
