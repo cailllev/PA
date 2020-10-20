@@ -91,12 +91,7 @@
       },
       "extracted_data": {
         "previous": null,
-        "next": {
-          "extracted_data": {
-            "init": 1,
-            "dt": 0
-          }
-        }
+        "next": null
       }
     },
     "services": {
