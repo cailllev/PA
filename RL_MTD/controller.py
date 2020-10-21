@@ -1,26 +1,44 @@
-from model.graph import Graph
+import model.graph as g
 
-import math
+import random
+
+
+def change_probs(node):
+    node.change_probs()
 
 
 class Controller:
     def __init__(self):
-        self._graph = Graph("simple_webservice")
+        self._graph = g.Graph("simple_webservice", "smiple_attack")
         self._nodes = self._graph.get_nodes()
 
         self._start_node = self._nodes[0]
         self._end_node = self._nodes[0]
         self._attacker_pos = self._start_node
 
+    def start(self):
+        count = 0
+        while count < 1000:
+            self.iterate()
+            if self.attacker_won():
+                return False
+
+        return True
+
     def iterate(self):
-        pass
+        probs = self._attacker_pos.get_probs()
+
+        chance = random.random()
+        if chance <= self.get_current_probs():
+            pass
 
     def get_current_probs(self):
-        self._attacker_pos.get_probs()
+        return self._attacker_pos.get_probs()
 
-    def change_probs(self):
-        self._graph.change_probs(self._attacker_pos)
-
-    def has_attacker_won(self):
+    def attacker_won(self):
         return self._attacker_pos == self._end_node
 
+
+if __name__ == "__main__":
+    c = Controller()
+    c.start()

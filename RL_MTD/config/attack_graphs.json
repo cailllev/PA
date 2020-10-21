@@ -17,7 +17,7 @@
             "init": "pp0",
             "dt": "dpp"
           },
-          "honeypot": {
+          "honeypot_authorizer": {
             "init": "pah0",
             "dt": "dpah"
           }
@@ -47,7 +47,7 @@
             "init": "pdb30",
             "dt": "dpdb3"
           },
-          "honeypot": {
+          "honeypot_planner": {
             "init": "pph0",
             "dt": "dph"
           }

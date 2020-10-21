@@ -2,10 +2,10 @@ import json
 from model.node import *
 
 
-def load_json(name_graph):
+def load_json(graph_name):
     f = open("../config/attack_graphs.json", "r")
     all_data = json.load(f)
-    return all_data[name_graph]
+    return all_data[graph_name]
 
 
 def load_nodes(nodes_data):
@@ -16,8 +16,8 @@ def load_nodes(nodes_data):
     return nodes
 
 
-def load_attack(attack_data):
-    pass
+def load_attack(graph_data, attack_name):
+    return graph_data["attacks"][attack_name]
 
 
 class NodeData:
@@ -44,8 +44,7 @@ def init_graph(nodes_data):
 
     # set reference and probability to next nodes
     for node in nodes:
-        next_nodes = []
-        probs = {}
+        next_nodes = {}
 
         next_names = node.get_next()
         if next_names:
@@ -53,37 +52,53 @@ def init_graph(nodes_data):
             for next_name in next_names:
                 for pot_node in nodes:
                     if pot_node.get_name() == next_name:
-                        next_nodes.append(pot_node)
-                        probs[next_name] = next_names[next_name]
+                        next_nodes[pot_node] = next_names[next_name]
+                        test = 1
 
-            node.set_next(next_nodes)
-            node.set_probs(probs)
+        node.set_next(next_nodes)
 
     return nodes
 
 
 class Graph:
-    def __init__(self, name_graph, name_attack):
-        graph_data = load_json(name_graph)
+    def __init__(self, graph_name, attack_name):
+        graph_data = load_json(graph_name)
 
         nodes_data = load_nodes(graph_data["nodes"])
         self._nodes = init_graph(nodes_data)
-        self.init_probs(name_attack)
+        self.init_probs(graph_data, attack_name)
 
-    def init_probs(self, name_attack):
-        for node in nodes:
-            pass
+    def init_probs(self, graph_data, name_attack):
+        attack_data = load_attack(graph_data, name_attack)
+
+        # write parameters from json to nodes
+        for node in self._nodes:
+            next_nodes = node.get_next()
+            for next_node in next_nodes:
+                for param in next_nodes[next_node]:
+                    for key in attack_data:
+                        if next_nodes[next_node][param] == key:
+                            next_nodes[next_node][param] = attack_data[key]
+                            break
+            node.set_next(next_nodes)
+
+        # add a current value to each edge
+        for node in self._nodes:
+            next_nodes = node.get_next()
+            for next_node in next_nodes:
+                next_nodes[next_node]["current"] = next_nodes[next_node]["init"]
+            node.set_next(next_nodes)
+
+    def init_services(self):
+        pass
 
     def get_nodes(self):
         return self._nodes
-
-    def change_probs(self, node):
-        node.change_probs()
 
     def __str__(self):
         return str([str(node) for node in self._nodes])
 
 
 if __name__ == "__main__":
-    g = Graph("simple_webservice")
-    print(str(g))
+    g = Graph("simple_webservice", "simple")
+    print(g)

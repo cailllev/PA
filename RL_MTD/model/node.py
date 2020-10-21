@@ -3,7 +3,6 @@ class Node:
         self._name = name
         self._prev = prev_node
         self._next = next_nodes
-        self._probs = next_nodes
 
     def get_name(self):
         return self._name
@@ -20,14 +19,8 @@ class Node:
     def get_next(self):
         return self._next
 
-    def set_probs(self, probs):
-        self._probs = probs
-
-    def get_probs(self):
-        return self._probs
-
     def change_probs(self):
-        return self._probs
+        pass
 
     def __str__(self):
         return str([
