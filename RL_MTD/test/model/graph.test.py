@@ -1,8 +1,13 @@
 import unittest
 import src.model.graph as g
 
-
 visited = []
+
+
+def check_path(start, goal):
+    global visited
+    visited = []
+    return visit_node(start, goal)
 
 
 def visit_node(current, goal):
@@ -24,9 +29,6 @@ class MyTestCase(unittest.TestCase):
         self.faulty_graph = g.Graph("faulty_graph", "simple")
 
     def test_start_to_end(self):
-        global visited
-        visited = []
-
         nodes = self.graph.get_nodes()
         start = nodes[0]
         goal = nodes[-1]
@@ -34,14 +36,11 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(visit_node(start, goal))
 
     def test_start_to_end_faulty(self):
-        global visited
-        visited = []
-
         nodes = self.faulty_graph.get_nodes()
         start = nodes[0]
         goal = nodes[-1]
 
-        self.assertFalse(visit_node(start, goal))
+        self.assertFalse(check_path(start, goal))
 
     def test_all_initialized(self):
         nodes = self.graph.get_nodes()
@@ -59,3 +58,7 @@ class MyTestCase(unittest.TestCase):
             next_nodes = node.get_next()
             for next_node in next_nodes:
                 self.assertIsNotNone(next_nodes[next_node])
+
+
+if __name__ == "__main__":
+    unittest.main()
