@@ -26,16 +26,26 @@ class Controller:
         return True
 
     def iterate(self):
-        probs = self._attacker_pos.get_probs()
+        val = random.random()
 
-        chance = random.random()
-        if chance <= probs():
-            pass
+        # probs = {planner: 0.6, authorizer_honeypot: 0.2}
+        # split = 0, 0.6, 0.8
+        # (val < split) -> change to node
+        # val: 0.7 -> node: authorizer_honeypot
+
+        probs = self._attacker_pos.get_probs()
+        running_sum = 0
+        for node in probs:
+            running_sum = running_sum + probs[node]
+            if val < running_sum:
+                self._attacker_pos = node
+                break
 
     def services(self):
         pass
 
-    def mtd_actions(self):
+    @staticmethod
+    def mtd_actions():
         switched = []
 
         for node in switched:
