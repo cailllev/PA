@@ -1,9 +1,9 @@
 import json
-from model.node import *
+from src.model.node import *
 
 
 def load_json(graph_name):
-    f = open("../config/attack_graphs.json", "r")
+    f = open("../../config/attack_graphs.json", "r")
     all_data = json.load(f)
     return all_data[graph_name]
 
@@ -93,6 +93,10 @@ class Graph:
         pass
 
     def get_nodes(self):
+        """
+        first node is always the start node, last is always the goal node
+        :return: all nodes
+        """
         return self._nodes
 
     def __str__(self):

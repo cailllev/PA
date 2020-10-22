@@ -1,10 +1,6 @@
-import model.graph as g
+import src.model.graph as g
 
 import random
-
-
-def change_probs(node):
-    node.change_probs()
 
 
 class Controller:
@@ -20,8 +16,12 @@ class Controller:
         count = 0
         while count < 1000:
             self.iterate()
-            if self.attacker_won():
+            self.services()
+            self.mtd_actions()
+            if self.attacker_wins():
                 return False
+
+            self.update_probs()
 
         return True
 
@@ -29,13 +29,22 @@ class Controller:
         probs = self._attacker_pos.get_probs()
 
         chance = random.random()
-        if chance <= self.get_current_probs():
+        if chance <= probs():
             pass
 
-    def get_current_probs(self):
-        return self._attacker_pos.get_probs()
+    def services(self):
+        pass
 
-    def attacker_won(self):
+    def mtd_actions(self):
+        switched = []
+
+        for node in switched:
+            node.reset_probs()
+
+    def update_probs(self):
+        self._attacker_pos.update_probs()
+
+    def attacker_wins(self):
         return self._attacker_pos == self._end_node
 
 

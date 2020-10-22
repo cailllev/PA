@@ -132,5 +132,35 @@
         "dphp": 0.01
       }
     }
+  },
+  "faulty_graph": {
+    "nodes": {
+      "first": {
+        "previous": null,
+        "next": {
+          "second": {
+            "init": "pa0",
+            "dt": "dpa"
+          }
+        }
+      },
+      "second": {
+        "previous": "first",
+        "next": {
+          "first": {
+            "init": "pp0",
+            "dt": "dpp"
+          }
+        }
+      },
+      "third": {
+        "previous": "second",
+        "next": null
+      }
+    },
+    "services": {},
+    "attacks": {
+      "simple": {}
+    }
   }
 }
