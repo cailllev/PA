@@ -1,5 +1,5 @@
 import json
-from src.model.node import *
+import src.model.node as n
 
 
 def load_json(graph_name):
@@ -8,68 +8,48 @@ def load_json(graph_name):
     return all_data[graph_name]
 
 
-def load_nodes(nodes_data):
-    nodes = []
-    for key in nodes_data:
-        n = NodeData(key, nodes_data[key])
-        nodes.append(n)
-    return nodes
-
-
-def load_attack(graph_data, attack_name):
-    return graph_data["attacks"][attack_name]
-
-
-class NodeData:
-    def __init__(self, name, data):
-        self.name = name
-        self.prev = data["previous"]
-        self.next = data["next"]
-
-
-def init_graph(nodes_data):
-    nodes = []
-
-    # init nodes and previous nodes
-    for node in nodes_data:
-        n = Node(node.name, node.prev, node.next)
-        nodes.append(n)
-
-    # set reference to previous node
-    for node in nodes:
-        prev_name = node.get_prev()
-        for pot_node in nodes:
-            if pot_node.get_name() == prev_name:
-                node.set_prev(pot_node)
-
-    # set reference and probability to next nodes
-    for node in nodes:
-        next_nodes = {}
-
-        next_names = node.get_next()
-        if next_names:
-
-            for next_name in next_names:
-                for pot_node in nodes:
-                    if pot_node.get_name() == next_name:
-                        next_nodes[pot_node] = next_names[next_name]
-                        test = 1
-
-        node.set_next(next_nodes)
-
-    return nodes
-
-
 class Graph:
     def __init__(self, graph_name, attack_name):
         graph_data = load_json(graph_name)
 
-        nodes_data = load_nodes(graph_data["nodes"])
-        self._nodes = init_graph(nodes_data)
+        self._nodes = []
+        self.init_nodes(graph_data)
         self.init_probs(graph_data, attack_name)
+        self.init_services(graph_data)
+
+    def init_nodes(self, graph_data):
+        # init nodes, init prev and next links as stings
+        nodes = graph_data["nodes"]
+        for node in nodes:
+            self._nodes.append(n.Node(
+                node,
+                nodes[node]["previous"],
+                nodes[node]["next"]
+            ))
+
+        # set reference to previous node
+        for node in self._nodes:
+            prev_name = node.get_prev()
+            for pot_node in self._nodes:
+                if pot_node.get_name() == prev_name:
+                    node.set_prev(pot_node)
+
+        # set reference and probability to next nodes
+        for node in self._nodes:
+            next_nodes = {}
+
+            next_names = node.get_next()
+            if next_names:
+
+                for next_name in next_names:
+                    for pot_node in self._nodes:
+                        if pot_node.get_name() == next_name:
+                            next_nodes[pot_node] = next_names[next_name]
+
+            node.set_next(next_nodes)
 
     def init_probs(self, graph_data, name_attack):
-        attack_data = load_attack(graph_data, name_attack)
+        attack_data = graph_data["attacks"][name_attack]
 
         # write parameters from json to nodes
         for node in self._nodes:
@@ -89,7 +69,8 @@ class Graph:
                 next_nodes[next_node]["current"] = next_nodes[next_node]["init"]
             node.set_next(next_nodes)
 
-    def init_services(self):
+    def init_services(self, graph_data):
+        # TODO
         pass
 
     def get_nodes(self):
