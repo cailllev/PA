@@ -44,12 +44,14 @@ class Controller:
     def services(self):
         pass
 
-    @staticmethod
-    def mtd_actions():
+    def mtd_actions(self):
         switched = []
 
         for node in switched:
             node.reset_probs()
+            if self._attacker_pos == node:
+                # TODO
+                pass  # reset attacker to previous node
 
     def update_probs(self):
         self._attacker_pos.update_probs()
