@@ -1,4 +1,6 @@
 import unittest
+import numbers
+
 import src.model.graph as g
 
 visited = []
@@ -55,9 +57,18 @@ class MyTestCase(unittest.TestCase):
             if node != nodes[-1]:
                 self.assertIsNotNone(node.get_next())
 
+            # check that there is a next node
             next_nodes = node.get_next()
             for next_node in next_nodes:
                 self.assertIsNotNone(next_nodes[next_node])
+
+                # check the probs to next node are numbers and not placeholders
+                for prob in next_nodes[next_node]:
+                    self.assertTrue(isinstance(next_nodes[next_node][prob], numbers.Number))
+
+        for detection_system in self.graph.get_detection_systems():
+            for prob in detection_system.get_all_probs():
+                self.assertTrue(isinstance(prob, numbers.Number))
 
 
 if __name__ == "__main__":

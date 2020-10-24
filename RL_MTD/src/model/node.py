@@ -3,6 +3,7 @@ class Node:
         self._name = name
         self._prev = prev_node
         self._next = next_nodes
+        self._detection_system = None
 
     def get_name(self):
         return self._name
@@ -40,12 +41,19 @@ class Node:
         """
         return {node: self._next[node]["current"] for node in self._next}
 
+    def set_detection_system(self, detection_system):
+        self._detection_system = detection_system
+
+    def get_detection_system(self):
+        return self._detection_system
+
     def __str__(self):
         """
-        :return: name of current, name of previous node, name of next node(s)
+        :return: name of current, name of previous node, name of next node(s),
         """
         return str([
             self._name,
             self._prev.get_name() if self._prev else "null",
-            [node.get_name() for node in self._next] if self._next else "null"
+            [node.get_name() for node in self._next] if self._next else "null",
+            self._detection_system.get_name() if self._detection_system else "null"
             ]) + "\n"

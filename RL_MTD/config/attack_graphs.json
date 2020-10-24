@@ -8,7 +8,8 @@
             "init": "pa0",
             "dt": "dpa"
           }
-        }
+        },
+        "restartable": 0
       },
       "authorizer": {
         "previous": "internet",
@@ -21,7 +22,8 @@
             "init": "pah0",
             "dt": "dpah"
           }
-        }
+        },
+        "restartable": 1
       },
       "honeypot_authorizer": {
         "previous": "authorizer",
@@ -30,7 +32,8 @@
             "init": "pha0",
             "dt": "dpha"
           }
-        }
+        },
+        "restartable": 0
       },
       "planner": {
         "previous": "authorizer",
@@ -49,9 +52,10 @@
           },
           "honeypot_planner": {
             "init": "pph0",
-            "dt": "dph"
+            "dt": "dphp"
           }
-        }
+        },
+        "restartable": 1
       },
       "honeypot_planner": {
         "previous": "planner",
@@ -60,54 +64,61 @@
             "init": "php0",
             "dt": "dphp"
           }
-        }
+        },
+        "restartable": 0
       },
       "DB1": {
         "previous": "planner",
         "next": {
           "extracted_data": {
-            "init": 1,
-            "dt": 0
+            "init": "pe0",
+            "dt": "dpe"
           }
-        }
+        },
+        "restartable": 1
       },
       "DB2": {
         "previous": "planner",
         "next": {
           "extracted_data": {
-            "init": 1,
-            "dt": 0
+            "init": "pe0",
+            "dt": "dpe"
           }
-        }
+        },
+        "restartable": 1
       },
       "DB3": {
         "previous": "planner",
         "next": {
           "extracted_data": {
-            "init": 1,
-            "dt": 0
+            "init": "pe0",
+            "dt": "dpe"
           }
-        }
+        },
+        "restartable": 1
       },
       "extracted_data": {
         "previous": null,
-        "next": null
+        "next": null,
+        "restartable": 0
       }
     },
-    "services": {
+    "detection_systems": {
       "IDS": {
-        "count": 3,
-        "before_nodes": ["authorizer", "planner", "DB1", "DB2", "DB3"],
+        "after_nodes": ["internet", "authorizer", "planner"],
         "catch_attacker_action": "internet",
-        "init": "pIDS0",
-        "dt": "dpIDS"
+        "probs": {
+          "init": "pIDS0",
+          "dt": "dpIDS"
+        }
       },
       "PS": {
-        "count": 3,
-        "before_nodes": ["extracted_data"],
+        "after_nodes": ["DB1", "DB2", "DB3"],
         "catch_attacker_action": "internet",
-        "init": "pPS0",
-        "dt": "dpIDS"
+        "probs": {
+          "init": "pPS0",
+          "dt": "dpPS"
+        }
       }
     },
     "attacks": {
@@ -129,7 +140,14 @@
         "pph0": 0.0,
         "dpph": 0.01,
         "php0": 0.0,
-        "dphp": 0.01
+        "dphp": 0.01,
+        "pe0": 1,
+        "dpe": 0,
+
+        "pIDS0": 0.983,
+        "dpIDS": -0.1,
+        "pPS0": 0.5,
+        "dpPS": -0.05
       }
     }
   },
@@ -139,28 +157,37 @@
         "previous": null,
         "next": {
           "second": {
-            "init": "pa0",
-            "dt": "dpa"
+            "init": "p20",
+            "dt": "dp2"
           }
-        }
+        },
+        "restartable": 0
       },
       "second": {
         "previous": "first",
         "next": {
           "first": {
-            "init": "pp0",
-            "dt": "dpp"
+            "init": "p10",
+            "dt": "dp1"
           }
-        }
+        },
+        "restartable": 0
       },
       "third": {
         "previous": "second",
-        "next": null
+        "next": null,
+        "restartable": 0
       }
     },
-    "services": {},
+    "detection_systems": {},
     "attacks": {
-      "simple": {}
+      "simple": {
+        "p10": 1,
+        "dp1": 0,
+
+        "p20": 1,
+        "dp2": 0
+      }
     }
   }
 }
