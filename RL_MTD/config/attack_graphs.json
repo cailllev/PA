@@ -106,7 +106,7 @@
     "detection_systems": {
       "IDS": {
         "after_nodes": ["internet", "authorizer", "planner"],
-        "catch_attacker_action": "internet",
+        "reset_node": "internet",
         "probs": {
           "init": "pIDS0",
           "dt": "dpIDS"
@@ -114,7 +114,7 @@
       },
       "PS": {
         "after_nodes": ["DB1", "DB2", "DB3"],
-        "catch_attacker_action": "internet",
+        "reset_node": "internet",
         "probs": {
           "init": "pPS0",
           "dt": "dpPS"
@@ -123,24 +123,24 @@
     },
     "attacks": {
       "simple": {
-        "pa0": 0.8,
-        "dpa": 0.01,
-        "pp0": 0.7,
-        "dpp": 0.01,
-        "pdb10": 0.6,
-        "dpdb1": 0.01,
-        "pdb20": 0.6,
-        "dpdb2": 0.01,
-        "pdb30": 0.6,
-        "dpdb3": 0.01,
-        "pah0": 0.1,
+        "pa0": 0.2,
+        "dpa": 0.02,
+        "pp0": 0.2,
+        "dpp": 0.02,
+        "pdb10": 0.2,
+        "dpdb1": 0.02,
+        "pdb20": 0.2,
+        "dpdb2": 0.02,
+        "pdb30": 0.2,
+        "dpdb3": 0.02,
+        "pah0": 0.2,
         "dpah": -0.01,
         "pha0": 0.0,
-        "dpha": 0.01,
-        "pph0": 0.0,
-        "dpph": 0.01,
+        "dpha": 0.1,
+        "pph0": 0.2,
+        "dpph": -0.01,
         "php0": 0.0,
-        "dphp": 0.01,
+        "dphp": 0.1,
         "pe0": 1,
         "dpe": 0,
 
@@ -149,6 +149,11 @@
         "pPS0": 0.5,
         "dpPS": -0.05
       }
+    },
+    "rewards": {
+      "restart_node": -5,
+      "switch_detection_system": -2,
+      "attacker_wins": -100
     }
   },
   "faulty_graph": {
