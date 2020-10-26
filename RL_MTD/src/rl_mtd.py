@@ -6,11 +6,11 @@ from .env.mtd_env import MTDEnv
 
 env = DummyVecEnv([lambda: MTDEnv()])
 
-model = PPO2(MlpPolicy, env, verbose=1)
-model.learn(total_timesteps=20000)
+# model = PPO2(MlpPolicy, env, verbose=1)
+# model.learn(total_timesteps=20000)
 
 obs = env.reset()
 for i in range(2000):
-    action, _states = model.predict(obs)
-    obs, rewards, done, info = env.step(action)
+    # action, _states = model.predict(obs)
+    obs, rewards, done, info = env.step(env.action_space.sample())
     env.render()

@@ -27,12 +27,18 @@ class Node:
         for node in self._next:
             self._next[node]["current"] = self._next[node]["init"]
 
+    def set_compromised(self, next_node):
+        """
+        sets the chance to get to next node to 1 (next node is compromised)
+        """
+        self._next[next_node]["current"] = 1
+
     def update_probs(self):
         """
         updates the current probability to get into the next node, current += dt
         """
         for node in self._next:
-            self._next[node]["current"] = self._next[node]["current"] + self._next[node]["dt"]
+            self._next[node]["current"] += self._next[node]["dt"]
 
     def get_probs(self):
         """
