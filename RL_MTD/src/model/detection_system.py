@@ -13,7 +13,7 @@ class DetectionSystem:
         self._p = self._p0
 
     def update_prob(self):
-        self._p = self._p + self._dt
+        self._p += self._dt
 
     def get_prob(self):
         return self._p

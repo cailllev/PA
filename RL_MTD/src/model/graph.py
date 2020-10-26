@@ -3,7 +3,7 @@ import src.model.node as n
 import src.model.detection_system as d
 
 
-def load_json(graph_name):
+def load_graph_data(graph_name):
     f = open("../../config/attack_graphs.json", "r")
     all_data = json.load(f)
     return all_data[graph_name]
@@ -11,7 +11,7 @@ def load_json(graph_name):
 
 class Graph:
     def __init__(self, graph_name, attack_name):
-        graph_data = load_json(graph_name)
+        graph_data = load_graph_data(graph_name)
         attack_data = graph_data["attacks"][attack_name]
 
         self._nodes = []
@@ -63,14 +63,14 @@ class Graph:
             for next_node in next_nodes:
                 for prob in next_nodes[next_node]:
 
-                    found_key = False
+                    found_prob = False
                     for key in attack_data:
                         if next_nodes[next_node][prob] == key:
                             next_nodes[next_node][prob] = attack_data[key]
-                            found_key = True
+                            found_prob = True
                             break
 
-                    assert found_key, f"Error, did not find prob {prob} for {next_node.get_name()}"
+                    assert found_prob, f"Error, did not find prob {prob} for {next_node.get_name()}"
 
             node.set_next(next_nodes)
 
@@ -90,16 +90,26 @@ class Graph:
             probs = {}
             for prob in detection_systems_types[detection_system]["probs"]:
 
-                found_key = False
+                found_prob = False
                 for key in attack_data:
                     if detection_systems_types[detection_system]["probs"][prob] == key:
                         probs[prob] = attack_data[key]
-                        found_key = True
+                        found_prob = True
                         break
 
-                assert found_key, f"Error, did not find prob {prob} for {detection_system}"
+                assert found_prob, f"Error, did not find prob {prob} for {detection_system}"
 
-            self._detection_systems.append(d.DetectionSystem(detection_system, probs))
+            reset_node_name = detection_systems_types[detection_system]["reset_node"]
+            found_reset_node = False
+            for node in self._nodes:
+                if node.get_name() == reset_node_name:
+                    reset_node_name = node
+                    found_reset_node = True
+                    break
+
+            assert found_reset_node, f"Error, did not find reset node {reset_node_name} for {detection_system}"
+
+            self._detection_systems.append(d.DetectionSystem(detection_system, probs, reset_node_name))
 
             # assign detection system to nodes
             nodes_names = detection_systems_types[detection_system]["after_nodes"]
@@ -113,8 +123,6 @@ class Graph:
                         break
 
                 assert found_node, f"Error, did not find node {name} for {detection_system}"
-
-            # TODO assign reset node
 
     def get_nodes(self):
         """
@@ -133,7 +141,8 @@ class Graph:
         return len(self._detection_systems)
 
     def __str__(self):
-        return str([str(node) for node in self._nodes])
+        return "Nodes: " + str([str(node) for node in self._nodes]) + \
+               "Detection: " + str([str(detection) for detection in self._detection_systems])
 
 
 if __name__ == "__main__":
