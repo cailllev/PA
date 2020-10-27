@@ -6,11 +6,12 @@ class MyTestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.next_node = n.Node("next", "node", {})
-        self.another_next_node = n.Node("another_next", "node", {})
+        self.next_node = n.Node("next", "node", {}, 1, False)
+        self.another_next_node = n.Node("another_next", "node", {}, 1, False)
         self.node = n.Node("test", "null",
                            {self.next_node: {"init": 0.8, "dt": 0.01, "current": 0.8},
-                            self.another_next_node: {"init": 0.7, "dt": 0.01, "current": 0.7}})
+                            self.another_next_node: {"init": 0.7, "dt": 0.01, "current": 0.7}},
+                           0, False)
 
     def test_get_probs(self):
         new_probs = self.node.get_probs()
@@ -31,7 +32,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(new_probs[self.another_next_node], 0.71)
 
         # reset
-        self.node.reset_probs()
+        self.node.reset_probs(self.next_node)
+        self.node.reset_probs(self.another_next_node)
         new_probs = self.node.get_probs()
         self.assertEqual(new_probs[self.next_node], 0.80)
         self.assertEqual(new_probs[self.another_next_node], 0.70)

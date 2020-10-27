@@ -44,6 +44,14 @@ class MyTestCase(unittest.TestCase):
 
         self.assertFalse(check_path(start, goal))
 
+    def test_count_honeypots(self):
+        count = 0
+        for node in self.graph.get_nodes():
+            if node.is_honeypot():
+                count += 1
+
+        self.assertEqual(count, 2)
+
     def test_all_initialized(self):
         nodes = self.graph.get_nodes()
         for node in nodes:
@@ -67,8 +75,7 @@ class MyTestCase(unittest.TestCase):
                     self.assertTrue(isinstance(next_nodes[next_node][prob], numbers.Number))
 
         for detection_system in self.graph.get_detection_systems():
-            for prob in detection_system.get_all_probs():
-                self.assertTrue(isinstance(prob, numbers.Number))
+            self.assertTrue(isinstance(detection_system.get_prob(), numbers.Number))
 
 
 if __name__ == "__main__":
