@@ -94,7 +94,10 @@ class MTDEnv(gym.Env):
         return obs, reward, done, info
 
     def render(self, mode='human'):
-        pass
+        print(self._counter)
+        print("Graph:" + str(graph))
+        print("Attacker: " + self._attacker_pos.get_name())
+        print()
 
     def update_probs(self):
         self._attacker_pos.update_probs()

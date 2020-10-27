@@ -25,4 +25,4 @@ class DetectionSystem:
         return self._reset_node
 
     def __str__(self):
-        return self._name
+        return ", ".join([self._name, str(self._reset_node)])

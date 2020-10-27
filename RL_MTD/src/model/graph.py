@@ -141,8 +141,8 @@ class Graph:
         return len(self._detection_systems)
 
     def __str__(self):
-        return "Nodes: " + str([str(node) for node in self._nodes]) + \
-               "Detection: " + str([str(detection) for detection in self._detection_systems])
+        return "Nodes: \n" + "\n".join([str(node) for node in self._nodes]) + \
+               "\n\nDetection: \n" + "\n".join([str(detection) for detection in self._detection_systems])
 
 
 if __name__ == "__main__":

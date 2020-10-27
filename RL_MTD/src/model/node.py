@@ -57,9 +57,9 @@ class Node:
         """
         :return: name of current, name of previous node, name of next node(s),
         """
-        return str([
+        return ", ".join([
             self._name,
             self._prev.get_name() if self._prev else "null",
-            [node.get_name() for node in self._next] if self._next else "null",
+            "[" + ", ".join([node.get_name() for node in self._next]) + "]" if self._next else "null",
             self._detection_system.get_name() if self._detection_system else "null"
-            ]) + "\n"
+            ])
