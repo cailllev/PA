@@ -19,7 +19,6 @@ def load_rewards(name):
 graph_name = "simple_webservice"
 graph = g.Graph(graph_name, "simple")
 nodes = graph.get_nodes()
-restartable_nodes = nodes[1:-1]
 detection_systems = graph.get_detection_systems()
 
 start_node = nodes[0]
@@ -31,15 +30,14 @@ rewards = load_rewards(graph_name)
 
 class MTDEnv(gym.Env):
     def __init__(self):
-        # ------------- MODEL ------------- #
         self._attacker_pos = start_node
 
         self._counter = 0
         self._last_time_on_start = 0
 
-        # -------------- GYM -------------- #
         self.progress = []
-        self.action_space = gym.spaces.MultiDiscrete([len(restartable_nodes), len(detection_systems)])
+        # first and last node are never restartable (start and finish)
+        self.action_space = gym.spaces.MultiDiscrete([len(nodes)-2, len(detection_systems)])
 
     def reset(self):
         self.__init__()
@@ -47,7 +45,7 @@ class MTDEnv(gym.Env):
     def step(self, action):
         """
         evaluate the given action, then simulate one time step for the attacker
-        action == 0: -> no action, action == 1 -> restart node[0], ..., action == n -> restart node[n-1]
+        action == 0: -> no action, action == 1 -> restart node[1], ..., action == n -> restart node[n]
 
         :param action: the action from the RL agent, what to restart and what to switch
         :return: obs, reward, done, info
@@ -58,45 +56,48 @@ class MTDEnv(gym.Env):
 
         self._counter += 1
 
-        # eval action
+        # --------------- eval action --------------- #
         restart_node = action[0]
         switch_detection_system = action[1]
 
         if restart_node:
-            node = restartable_nodes[restart_node-1]
+            node = nodes[restart_node]
             node.get_prev().reset_probs(node)
             reward += rewards["restart_node"]
             if self._attacker_pos == node:
                 self._attacker_pos = self._attacker_pos.get_prev()
 
         if switch_detection_system:
-            detection_systems[switch_detection_system-1].reset_prob()
+            detection_systems[switch_detection_system].reset_prob()
             reward += rewards["switch_detection_system"]
 
-        # simulate next step, "simulated attack"
+        # ---------------- simulate ---------------- #
         val = random.random()
         self._attacker_pos.update_probs()
 
         # Detection System catching attacker (unless already in honeypot)
+        caught = False
         detection_system = self._attacker_pos.get_detection_system()
         if detection_system and not self._attacker_pos.is_honeypot():
             if val < detection_system.get_prob():
                 detection_system.caught_attacker()
                 self._attacker_pos = start_node
+                caught = True
 
         # Attacker is in honeypot -> Detection System gets better
         if self._attacker_pos.is_honeypot():
             self._attacker_pos.get_detection_system().learn()
 
-        # Attacker getting into next node
-        probs = self._attacker_pos.get_probs()
-        running_sum = 0
-        for node in probs:
-            running_sum = running_sum + probs[node]
-            if val < running_sum:
-                self._attacker_pos.set_compromised(node)
-                self._attacker_pos = node
-                break
+        # Attacker getting into next node, only possible if not caught
+        if not caught:
+            probs = self._attacker_pos.get_probs()
+            running_sum = 0
+            for node in probs:
+                running_sum = running_sum + probs[node]
+                if val < running_sum:
+                    self._attacker_pos.set_compromised(node)
+                    self._attacker_pos = node
+                    break
 
         if self._attacker_pos == start_node:
             self._last_time_on_start = self._counter
