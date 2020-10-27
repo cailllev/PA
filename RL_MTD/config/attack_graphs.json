@@ -9,7 +9,7 @@
             "dt": "dpa"
           }
         },
-        "restartable": 0
+        "progress": 0
       },
       "authorizer": {
         "previous": "internet",
@@ -23,7 +23,7 @@
             "dt": "dpah"
           }
         },
-        "restartable": 1
+        "progress": 1
       },
       "honeypot_authorizer": {
         "previous": "authorizer",
@@ -33,7 +33,7 @@
             "dt": "dpha"
           }
         },
-        "restartable": 0
+        "progress": -1
       },
       "planner": {
         "previous": "authorizer",
@@ -55,7 +55,7 @@
             "dt": "dphp"
           }
         },
-        "restartable": 1
+        "progress": 2
       },
       "honeypot_planner": {
         "previous": "planner",
@@ -65,7 +65,7 @@
             "dt": "dphp"
           }
         },
-        "restartable": 0
+        "progress": -1
       },
       "DB1": {
         "previous": "planner",
@@ -75,7 +75,7 @@
             "dt": "dpe"
           }
         },
-        "restartable": 1
+        "progress": 3
       },
       "DB2": {
         "previous": "planner",
@@ -85,7 +85,7 @@
             "dt": "dpe"
           }
         },
-        "restartable": 1
+        "progress": 3
       },
       "DB3": {
         "previous": "planner",
@@ -95,29 +95,27 @@
             "dt": "dpe"
           }
         },
-        "restartable": 1
+        "progress": 3
       },
       "extracted_data": {
         "previous": null,
         "next": null,
-        "restartable": 0
+        "progress": 4
       }
     },
     "detection_systems": {
       "IDS": {
-        "after_nodes": ["internet", "authorizer", "planner"],
+        "after_nodes": ["internet", "authorizer", "honeypot_authorizer", "planner", "honeypot_planner"],
         "reset_node": "internet",
         "probs": {
-          "init": "pIDS0",
-          "dt": "dpIDS"
+          "init": "pIDS0"
         }
       },
       "PS": {
         "after_nodes": ["DB1", "DB2", "DB3"],
         "reset_node": "internet",
         "probs": {
-          "init": "pPS0",
-          "dt": "dpPS"
+          "init": "pPS0"
         }
       }
     },
@@ -153,7 +151,8 @@
     "rewards": {
       "restart_node": -5,
       "switch_detection_system": -2,
-      "attacker_wins": -100
+      "attacker_wins": -1000,
+      "in_honeypot": 20
     }
   },
   "faulty_graph": {
@@ -166,7 +165,7 @@
             "dt": "dp2"
           }
         },
-        "restartable": 0
+        "progress": 0
       },
       "second": {
         "previous": "first",
@@ -176,12 +175,12 @@
             "dt": "dp1"
           }
         },
-        "restartable": 0
+        "progress": 1
       },
       "third": {
         "previous": "second",
         "next": null,
-        "restartable": 0
+        "progress": 2
       }
     },
     "detection_systems": {},

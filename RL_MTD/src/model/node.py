@@ -1,9 +1,11 @@
 class Node:
-    def __init__(self, name, prev_node, next_nodes):
+    def __init__(self, name, prev_node, next_nodes, progress, is_honeypot):
         self._name = name
         self._prev = prev_node
         self._next = next_nodes
         self._detection_system = None
+        self._progress = progress
+        self._is_honeypot = is_honeypot
 
     def get_name(self):
         return self._name
@@ -20,12 +22,11 @@ class Node:
     def get_next(self):
         return self._next
 
-    def reset_probs(self):
+    def reset_probs(self, next_node):
         """
-        sets the current prob to init prob
+        sets the probability to reach the next_node from the current node to init
         """
-        for node in self._next:
-            self._next[node]["current"] = self._next[node]["init"]
+        self._next[next_node]["current"] = self._next[next_node]["init"]
 
     def set_compromised(self, next_node):
         """
@@ -53,13 +54,19 @@ class Node:
     def get_detection_system(self):
         return self._detection_system
 
+    def get_progress_level(self):
+        return self._progress
+
+    def is_honeypot(self):
+        return self._is_honeypot
+
     def __str__(self):
         """
         :return: name of current, name of previous node, name of next node(s),
         """
-        return ", ".join([
-            self._name,
+        return " -> ".join([
             self._prev.get_name() if self._prev else "null",
-            "[" + ", ".join([node.get_name() for node in self._next]) + "]" if self._next else "null",
-            self._detection_system.get_name() if self._detection_system else "null"
-            ])
+            "*" + self._name + "*",
+            "{" + ", ".join([node.get_name() for node in self._next]) + "}" if self._next else "null"
+            ]) + \
+            "; " + (self._detection_system.get_name() if self._detection_system else "null")

@@ -1,11 +1,16 @@
 import json
+
 import src.model.node as n
 import src.model.detection_system as d
 
+from pathlib import Path
+path = Path(__file__).parent / "../../config/attack_graphs.json"
+
 
 def load_graph_data(graph_name):
-    f = open("../../config/attack_graphs.json", "r")
+    f = open(path, "r")
     all_data = json.load(f)
+    f.close()
     return all_data[graph_name]
 
 
@@ -15,7 +20,6 @@ class Graph:
         attack_data = graph_data["attacks"][attack_name]
 
         self._nodes = []
-        self._restartable_nodes = []
         self._detection_systems = []
 
         self.init_nodes(graph_data)
@@ -29,10 +33,10 @@ class Graph:
             self._nodes.append(n.Node(
                 node,
                 nodes[node]["previous"],
-                nodes[node]["next"]
+                nodes[node]["next"],
+                nodes[node]["progress"],
+                True if node.__contains__("honeypot") else False
             ))
-            if nodes[node]["restartable"]:
-                self._restartable_nodes.append(self._nodes[-1])
 
         # set reference to previous node
         for node in self._nodes:
@@ -134,15 +138,12 @@ class Graph:
     def get_detection_systems(self):
         return self._detection_systems
 
-    def get_restartable_nodes_count(self):
-        return len(self._restartable_nodes)
-
     def get_detection_systems_count(self):
         return len(self._detection_systems)
 
     def __str__(self):
         return "Nodes: \n" + "\n".join([str(node) for node in self._nodes]) + \
-               "\n\nDetection: \n" + "\n".join([str(detection) for detection in self._detection_systems])
+               "\nDetection: \n" + "\n".join([str(detection) for detection in self._detection_systems])
 
 
 if __name__ == "__main__":
