@@ -108,14 +108,16 @@
         "after_nodes": ["internet", "authorizer", "honeypot_authorizer", "planner", "honeypot_planner"],
         "reset_node": "internet",
         "probs": {
-          "init": "pIDS0"
+          "init": "pIDS0",
+          "de": "dpIDS"
         }
       },
       "PS": {
         "after_nodes": ["DB1", "DB2", "DB3"],
         "reset_node": "internet",
         "probs": {
-          "init": "pPS0"
+          "init": "pPS0",
+          "de": "dpPS"
         }
       }
     },
@@ -143,9 +145,9 @@
         "dpe": 0,
 
         "pIDS0": 0.983,
-        "dpIDS": -0.1,
-        "pPS0": 0.5,
-        "dpPS": -0.05
+        "dpIDS": 0.5,
+        "pPS0": 0.6,
+        "dpPS": 0.5
       }
     },
     "rewards": {

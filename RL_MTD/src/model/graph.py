@@ -3,11 +3,15 @@ import json
 import src.model.node as n
 import src.model.detection_system as d
 
+from typing import List
+from typing import Dict
+
 from pathlib import Path
 path = Path(__file__).parent / "../../config/attack_graphs.json"
 
 
 def load_graph_data(graph_name):
+    # type: (str) -> dict
     f = open(path, "r")
     all_data = json.load(f)
     f.close()
@@ -16,25 +20,38 @@ def load_graph_data(graph_name):
 
 class Graph:
     def __init__(self, graph_name, attack_name):
+        # type: (str, str) -> None
+        """
+        initializes an attack graph
+        :param graph_name: name of the graph (in attack_graphs.json)
+        :param attack_name: name of the attack (in attack_graphs.json)
+        """
         graph_data = load_graph_data(graph_name)
+        nodes_data = graph_data["nodes"]
         attack_data = graph_data["attacks"][attack_name]
+        detection_system_data = graph_data["detection_systems"]
 
         self._nodes = []
         self._detection_systems = []
 
-        self.init_nodes(graph_data)
-        self.init_probs(attack_data)
-        self.init_detection_systems(graph_data, attack_data)
+        self._init_nodes(nodes_data)
+        self._init_node_probs(attack_data)
+        self._init_detection_systems(detection_system_data, attack_data)
 
-    def init_nodes(self, graph_data):
+    def _init_nodes(self, nodes_data):
+        # type: (dict) -> None
+        """
+        parses the data from nodes_data and creates referenced nodes
+        :param nodes_data: all data regarding nodes
+        """
+
         # init nodes, init prev and next links as stings
-        nodes = graph_data["nodes"]
-        for node in nodes:
+        for node in nodes_data:
             self._nodes.append(n.Node(
                 node,
-                nodes[node]["previous"],
-                nodes[node]["next"],
-                nodes[node]["progress"],
+                nodes_data[node]["previous"],
+                nodes_data[node]["next"],
+                nodes_data[node]["progress"],
                 True if node.__contains__("honeypot") else False
             ))
 
@@ -59,7 +76,13 @@ class Graph:
 
             node.set_next(next_nodes)
 
-    def init_probs(self, attack_data):
+    def _init_node_probs(self, attack_data):
+        # type: (Dict[str, float]) -> None
+        """
+        looks up the probs in the nodes and sets numerical values according to attack data
+        :param attack_data: name and value of all probs
+        """
+
         # write parameters from json to nodes
         for node in self._nodes:
 
@@ -78,32 +101,36 @@ class Graph:
 
             node.set_next(next_nodes)
 
-        # add a current value to each edge
+        # add a current prob (equal to init)
         for node in self._nodes:
-            next_nodes = node.get_next()
-            for next_node in next_nodes:
-                next_nodes[next_node]["current"] = next_nodes[next_node]["init"]
-            node.set_next(next_nodes)
+            for next_node in node.get_next():
+                node.reset_probs(next_node)
 
-    def init_detection_systems(self, graph_data, attack_data):
+    def _init_detection_systems(self, detection_system_data, attack_data):
+        # type: (dict, dict) -> None
+        """
+        parses the nodes and probs from detection_system_data and attack_data, initializes detection systems and assigns
+        them to the corresponding nodes
+        :param detection_system_data: all data regarding a detection system
+        :param attack_data: the probability of catching an attacker and change in probability after catching
+        """
 
-        detection_systems_types = graph_data["detection_systems"]
-        for detection_system in detection_systems_types:
+        for detection_system in detection_system_data:
 
             # get probs
             probs = {}
-            for prob in detection_systems_types[detection_system]["probs"]:
+            for prob in detection_system_data[detection_system]["probs"]:
 
                 found_prob = False
                 for key in attack_data:
-                    if detection_systems_types[detection_system]["probs"][prob] == key:
+                    if detection_system_data[detection_system]["probs"][prob] == key:
                         probs[prob] = attack_data[key]
                         found_prob = True
                         break
 
                 assert found_prob, f"Error, did not find prob {prob} for {detection_system}"
 
-            reset_node_name = detection_systems_types[detection_system]["reset_node"]
+            reset_node_name = detection_system_data[detection_system]["reset_node"]
             found_reset_node = False
             for node in self._nodes:
                 if node.get_name() == reset_node_name:
@@ -116,7 +143,7 @@ class Graph:
             self._detection_systems.append(d.DetectionSystem(detection_system, probs, reset_node_name))
 
             # assign detection system to nodes
-            nodes_names = detection_systems_types[detection_system]["after_nodes"]
+            nodes_names = detection_system_data[detection_system]["after_nodes"]
             for name in nodes_names:
 
                 found_node = False
@@ -129,6 +156,7 @@ class Graph:
                 assert found_node, f"Error, did not find node {name} for {detection_system}"
 
     def get_nodes(self):
+        # type: () -> List[n.Node]
         """
         first node is always the start node, last is always the goal node
         :return: all nodes
@@ -136,9 +164,11 @@ class Graph:
         return self._nodes
 
     def get_detection_systems(self):
+        # type: () -> List["d.DetectionSystem"]
         return self._detection_systems
 
     def get_detection_systems_count(self):
+        # type: () -> int
         return len(self._detection_systems)
 
     def __str__(self):

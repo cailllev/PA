@@ -1,14 +1,18 @@
 import json
 import gym
 import random
+from collections import deque
 
 import src.model.graph as g
+
+from typing import List, Tuple
 
 from pathlib import Path
 path = Path(__file__).parent / "../../config/attack_graphs.json"
 
 
 def load_rewards(name):
+    # type: (str) -> dict
     f = open(path, "r")
     all_data = json.load(f)
     f.close()
@@ -30,19 +34,23 @@ rewards = load_rewards(graph_name)
 
 class MTDEnv(gym.Env):
     def __init__(self):
+        # type: () -> None
         self._attacker_pos = start_node
 
         self._counter = 0
         self._last_time_on_start = 0
 
-        self.progress = []
+        self.progress = deque()
         # first and last node are never restartable (start and finish)
         self.action_space = gym.spaces.MultiDiscrete([len(nodes)-2, len(detection_systems)])
 
     def reset(self):
+        # type: () -> str
         self.__init__()
+        return ""
 
     def step(self, action):
+        # type: (List[int]) -> Tuple[str, int, bool, str]
         """
         evaluate the given action, then simulate one time step for the attacker
         action == 0: -> no action, action == 1 -> restart node[1], ..., action == n -> restart node[n]
@@ -50,7 +58,7 @@ class MTDEnv(gym.Env):
         :param action: the action from the RL agent, what to restart and what to switch
         :return: obs, reward, done, info
         """
-        obs = info = None
+        obs = info = ""
         reward = 0
         done = False
 
@@ -109,12 +117,12 @@ class MTDEnv(gym.Env):
             done = True
             reward += rewards["attacker_wins"]
 
-        # TODO optimize append?
         self.progress.append(self._attacker_pos.get_progress_level())
 
         return obs, reward, done, info
 
     def render(self, mode='human'):
+        # type: (str) -> None
         print(self._counter)
         if mode != "human":
             print("Graph:\n" + str(graph))
@@ -122,12 +130,15 @@ class MTDEnv(gym.Env):
         print()
 
     def attacker_wins(self):
+        # type: () -> bool
         return self._attacker_pos == end_node
 
     def get_counter(self):
+        # type: () -> int
         return self._counter
 
     def __str__(self):
+        # type: () -> str
         return "\n".join([
             str(self._counter),
             "Attacker: " + self._attacker_pos.get_name(),
