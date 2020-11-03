@@ -151,11 +151,16 @@
       }
     },
     "rewards": {
-      "restart_node": -5,
       "switch_detection_system": -2,
-      "attacker_wins": -1000,
-      "in_honeypot": 20
-    }
+      "restart_node": -5,
+      "progression": -10,
+      "attacker_wins": -100,
+
+      "in_honeypot": 1,
+      "caught_attacker": 5,
+      "defender_wins": 100
+    },
+    "simulation_steps": 1000
   },
   "faulty_graph": {
     "nodes": {

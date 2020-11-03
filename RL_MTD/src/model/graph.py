@@ -33,6 +33,8 @@ class Graph:
 
         self._nodes = []
         self._detection_systems = []
+        self._min_progress_level = 1000
+        self._max_progress_level = -1000
 
         self._init_nodes(nodes_data)
         self._init_node_probs(attack_data)
@@ -54,6 +56,19 @@ class Graph:
                 nodes_data[node]["progress"],
                 True if node.__contains__("honeypot") else False
             ))
+
+        # get min / max progression
+        for node in self._nodes:
+            progress_level = node.get_progress_level()
+
+            if progress_level < self._min_progress_level:
+                self._min_progress_level = progress_level
+
+            if progress_level > self._max_progress_level:
+                self._max_progress_level = progress_level
+
+        assert self._min_progress_level != 1000, "Error, min progress not found!"
+        assert self._max_progress_level != -1000, "Error, max progress not found!"
 
         # set reference to previous node
         for node in self._nodes:
@@ -170,6 +185,10 @@ class Graph:
     def get_detection_systems_count(self):
         # type: () -> int
         return len(self._detection_systems)
+
+    def get_progress_levels_count(self):
+        # type: () -> int
+        return self._max_progress_level - self._min_progress_level + 1
 
     def __str__(self):
         return "Nodes: \n" + "\n".join([str(node) for node in self._nodes]) + \
