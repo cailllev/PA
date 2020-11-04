@@ -181,9 +181,13 @@ class MTDEnv(gym.Env):
         # type: () -> List[int]
         return list(self._progress_history)
 
-    def get_steps(self):
+    def get_counter(self):
         # type: () -> int
         return self._counter
+
+    def get_simulation_steps(self):
+        # type: () -> int
+        return self._simulation_steps
 
     def get_total_reward(self):
         # type: () -> int
