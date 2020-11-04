@@ -1,0 +1,35 @@
+*********************************************************************
+Starting Simulation Types: Random, Random, Static
+Simulations per Type:      100
+*********************************************************************
+Simulation Type: Random
+***********************
+Avg steps:        55.08
+Avg reward/step: -23.195
+Min steps:        4
+Max steps:        347
+
+Defender wins:    0
+Attacker wins:    100
+*********************************************************************
+Simulation Type: Random
+***********************
+Avg steps:        51.48
+Avg reward/step: -22.805
+Min steps:        4
+Max steps:        257
+
+Defender wins:    0
+Attacker wins:    100
+*********************************************************************
+Simulation Type: Static
+***********************
+Avg steps:        4.28
+Avg reward/step: -48.852
+Min steps:        4
+Max steps:        14
+
+Defender wins:    0
+Attacker wins:    100
+*********************************************************************
+Random is the best algorithm with 55.08 avg steps.
