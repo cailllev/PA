@@ -1,5 +1,5 @@
 from stable_baselines.common.policies import MlpPolicy
-from stable_baselines import PPO2, ACKTR, A2C, SAC, TD3
+from stable_baselines import PPO2, ACKTR, A2C
 
 from src.env.mtd_env import MTDEnv
 
@@ -18,9 +18,16 @@ from src.env.mtd_env import MTDEnv
 #       * no support from stable_baselines
 
 
+random = "Random"
+static = "Static"
+
 # ------------------------- config ------------------------- #
 learn = False
+timesteps = 10 ** 7
+
 simulate_only_best = True
+simulations_count = 100
+
 results_file = "results.txt"
 
 
@@ -37,136 +44,214 @@ def get_best_algorithm():
         return last_line.split(" ")[0]
 
     except FileNotFoundError:
-        return "Random"
+        return random
 
 
 env = MTDEnv()
-model = PPO2(MlpPolicy, env, verbose=0)
-algorithms = [PPO2, ACKTR, A2C, SAC, TD3]
+algorithms = {
+    PPO2: {"name": "PPO2", "kwargs": {}},
+    ACKTR: {"name": "ACKTR", "kwargs": {}},
+    A2C: {"name": "A2C", "kwargs": {}},
+}
+default_algorithm = PPO2
 
 if learn:
+    print("*********************************************")
+    print(f"Learning {len(algorithms)} algorithms.")
     for algorithm in algorithms:
+        algorithm_name = algorithms[algorithm]["name"]
         import time
 
         start = time.time()
-        timesteps = 10 ** 6
 
-        print(f"Learing {algorithm}...")
+        print("*********************************************")
+        print(f"Learning {algorithm_name}.")
         print(f"{timesteps} steps to simulate.")
         print(f"Estimated time: {timesteps / 10 ** 5} min.")
+        print("...")
 
-        # crazy magic here
+        model = algorithm(MlpPolicy, env, verbose=0, **algorithms[algorithm]["kwargs"])
         model.learn(total_timesteps=timesteps)
-        model.save(algorithm)
+        model.save(algorithm_name)
 
-        print(f"{time.time() - start} sec to simulate {timesteps} steps")
+        print(f"{round(time.time() - start)} seconds to simulate {timesteps} steps.")
 
 # ------------------------ evaluating ------------------------ #
-best_avg_steps = [0, "Random"]
+best_avg_steps = [0, random]
 show_model_after_each_step = False
 show_results_after_each_sim = False
 
-simulations_count = 100
-
 if simulate_only_best:
-    sim_types = [get_best_algorithm(), "Random", "Static"]
-else:
-    sim_types = [*algorithms, "Random", "Static"]
+    # delete all algorihms except the best from dict
+    best_algo = get_best_algorithm()
+    for algo in algorithms:
+        if algorithms[algo]["name"] == best_algo:
+            val = algorithms[algo]
+            algorithms.clear()
+            algorithms[algo] = val
+            break
 
-results = dict.fromkeys(sim_types)
-# {
+# add random and static for evaluation
+algorithms[random] = {"name": random}
+algorithms[static] = {"name": static}
+
+algorithm_names = []
+for algorithm_name in algorithms:
+    algorithm_names.append(algorithms[algorithm_name]["name"])
+
+results = dict.fromkeys(algorithm_names)
+# restults = {
 #   "PP02": {
 #       "steps": List[int],
 #       "total_reward": List[int],
+#       "min_steps": int,
+#       "max_steps": int,
 #       "avg_steps": float,
 #       "avg_rewards": float
 #   },
+#   ...,
 #   "Random": {...},
-#   ...
+#   "Static": {...}
 # }
 
-f = open(results_file, "w")
-f.write("*********************************************************************\n")
-f.write(f"Starting Simulation Types: {', '.join(sim_types)}\n")
-f.write(f"Simulations per Type:      {simulations_count}\n")
+print("*********************************************")
+print(f"Prepared to simulate {', '.join(algorithm_names)} with {simulations_count} simulations")
+print("...")
 
-for sim_type in sim_types:
-    f.write("*********************************************************************\n")
-    f.write(f"Simulation Type: {sim_type}\n")
 
-    min_steps = env.get_simulation_steps()
-    max_steps = 0
+def update_results(algo_name):
+    global results
+    results[algo_name]["steps"].append(env.get_counter())
+    results[algo_name]["total_reward"].append(env.get_total_reward() / env.get_counter())
 
-    results[sim_type] = {}
-    results[sim_type]["steps"] = []
-    results[sim_type]["total_reward"] = []
-    results[sim_type]["defender_wins"] = 0
+    if env.defender_wins():
+        results[algo_name]["defender_wins"] += 1
 
-    null_action = [0, 0]
+    if env.get_counter() < results[algo_name]["min_steps"]:
+        results[algo_name]["min_steps"] = env.get_counter()
 
-    for _ in range(simulations_count):
-        obs = env.reset()
-        done = False
+    if env.get_counter() > results[algo_name]["max_steps"]:
+        results[algo_name]["max_steps"] = env.get_counter()
 
-        # run 1 simulation (until attacker or defender wins)
-        while not done:
+    if show_results_after_each_sim:
+        print("\n" + str(env))
 
-            # select action according to sim_type
-            if sim_type is "Random":
-                action = env.action_space.sample()
-            elif sim_type is "Static":
-                action = null_action
-            else:
-                action, _ = model.predict(obs)
 
-            # do action on model
-            obs, rewards, done, info = env.step(action)
-            if show_model_after_each_step:
-                env.render()
-
-        results[sim_type]["steps"].append(env.get_counter())
-        results[sim_type]["total_reward"].append(env.get_total_reward() / env.get_counter())
-
-        if env.defender_wins():
-            results[sim_type]["defender_wins"] += 1
-
-        if env.get_counter() < min_steps:
-            min_steps = env.get_counter()
-
-        if env.get_counter() > max_steps:
-            max_steps = env.get_counter()
-
-        if show_results_after_each_sim:
-            print("\n" + str(env))
+def evaluate_and_save_results(algo_name):
+    global results
+    global best_avg_steps
 
     sum_steps = 0
-    sum_rewards = 0
-
-    for steps in results[sim_type]["steps"]:
+    for steps in results[algo_name]["steps"]:
         sum_steps += steps
 
-    for total_rewards in results[sim_type]["total_reward"]:
+    sum_rewards = 0
+    for total_rewards in results[algo_name]["total_reward"]:
         sum_rewards += total_rewards
 
     avg_steps = round(sum_steps / simulations_count, 3)
     avg_reward = round(sum_rewards / simulations_count, 3)
 
     if avg_steps > best_avg_steps[0]:
-        best_avg_steps = [avg_steps, sim_type]
+        best_avg_steps = [avg_steps, algo_name]
 
-    results[sim_type]["avg_steps"] = avg_steps
-    results[sim_type]["avg_reward"] = avg_reward
+    min_steps = results[algo_name]["min_steps"]
+    max_steps = results[algo_name]["max_steps"]
 
-    defender_wins = results[sim_type]['defender_wins']
+    results[algo_name]["avg_steps"] = avg_steps
+    results[algo_name]["avg_reward"] = avg_reward
+
+    defender_wins = results[algo_name]['defender_wins']
     attacker_wins = simulations_count - defender_wins
 
-    f.write(f"*****************{'*' * len(sim_type)}\n")
+    f.write("*********************************************************************\n")
+    f.write(f"Simulation Type: {algo_name}\n")
+    f.write(f"*****************{'*' * len(algo_name)}\n")
     f.write(f"Avg steps:        {avg_steps}\n")
     f.write(f"Avg reward/step: {avg_reward}\n")
     f.write(f"Min steps:        {min_steps}\n")
     f.write(f"Max steps:        {max_steps}\n\n")
     f.write(f"Defender wins:    {defender_wins}\n")
     f.write(f"Attacker wins:    {attacker_wins}\n")
+
+
+def run_random_simulation():
+    env.reset()
+    done = False
+
+    while not done:
+        action = env.action_space.sample()
+
+        # do action on model
+        obs, rewards, done, info = env.step(action)
+        if show_model_after_each_step:
+            env.render()
+
+
+def run_static_simulation():
+    env.reset()
+    done = False
+    null_action = [0, 0]
+
+    while not done:
+        obs, rewards, done, info = env.step(null_action)
+        if show_model_after_each_step:
+            env.render()
+
+
+def run_rl_simulation(mod):
+    obs = env.reset()
+    done = False
+
+    while not done:
+        action, _ = mod.predict(obs)
+
+        # do action on model
+        obs, rewards, done, info = env.step(action)
+        if show_model_after_each_step:
+            env.render()
+
+
+f = open(results_file, "w")
+f.write("*********************************************************************\n")
+f.write(f"Starting Simulation Types: {', '.join(algorithm_names)}\n")
+f.write(f"Simulations per Type:      {simulations_count}\n")
+
+for algorithm in algorithms:
+    algorithm_name = algorithms[algorithm]["name"]
+
+    if algorithm_name is not random and algorithm_name is not static:
+        try:
+            model = algorithm(MlpPolicy, env, verbose=0, **algorithms[algorithm]["kwargs"])
+            model.load(algorithm_name)
+        except ValueError:
+            f.write(f"{algorithm_name} not trained yet, skipping to next algo\n")
+            continue
+    else:
+        # only used to omit warning
+        model = default_algorithm(MlpPolicy, env, verbose=0)
+
+    results[algorithm_name] = {}
+    results[algorithm_name]["steps"] = []
+    results[algorithm_name]["min_steps"] = env.get_simulation_steps()
+    results[algorithm_name]["max_steps"] = 0
+    results[algorithm_name]["total_reward"] = []
+    results[algorithm_name]["defender_wins"] = 0
+
+    for _ in range(simulations_count):
+        # run 1 simulation (until attacker or defender wins)
+        if algorithm_name is random:
+            run_random_simulation()
+
+        elif algorithm_name is static:
+            run_static_simulation()
+
+        else:
+            run_rl_simulation(model)
+
+        update_results(algorithm_name)
+
+    evaluate_and_save_results(algorithm_name)
 
 f.write("*********************************************************************\n")
 f.write(f"{best_avg_steps[1]} is the best algorithm with {best_avg_steps[0]} avg steps.\n")

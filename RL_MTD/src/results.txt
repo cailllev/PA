@@ -1,35 +1,35 @@
 *********************************************************************
-Starting Simulation Types: Random, Random, Static
+Starting Simulation Types: PPO2, Random, Static
 Simulations per Type:      100
 *********************************************************************
-Simulation Type: Random
-***********************
-Avg steps:        55.08
-Avg reward/step: -23.195
+Simulation Type: PPO2
+*********************
+Avg steps:        51.53
+Avg reward/step: -24.539
 Min steps:        4
-Max steps:        347
+Max steps:        430
 
 Defender wins:    0
 Attacker wins:    100
 *********************************************************************
 Simulation Type: Random
 ***********************
-Avg steps:        51.48
-Avg reward/step: -22.805
+Avg steps:        49.53
+Avg reward/step: -22.054
 Min steps:        4
-Max steps:        257
+Max steps:        178
 
 Defender wins:    0
 Attacker wins:    100
 *********************************************************************
 Simulation Type: Static
 ***********************
-Avg steps:        4.28
-Avg reward/step: -48.852
+Avg steps:        4.4
+Avg reward/step: -48.229
 Min steps:        4
-Max steps:        14
+Max steps:        16
 
 Defender wins:    0
 Attacker wins:    100
 *********************************************************************
-Random is the best algorithm with 55.08 avg steps.
+PPO2 is the best algorithm with 51.53 avg steps.
