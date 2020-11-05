@@ -22,11 +22,11 @@ random = "Random"
 static = "Static"
 
 # ------------------------- config ------------------------- #
-learn = False
+learn = True
 timesteps = 10 ** 7
 
-simulate_only_best = True
-simulations_count = 100
+simulate_only_best = False
+simulations_count = 1000
 
 results_file = "results.txt"
 
@@ -71,6 +71,7 @@ if learn:
         print("...")
 
         model = algorithm(MlpPolicy, env, verbose=0, **algorithms[algorithm]["kwargs"])
+        model.load(algorithm_name)
         model.learn(total_timesteps=timesteps)
         model.save(algorithm_name)
 

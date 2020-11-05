@@ -1,35 +1,55 @@
 *********************************************************************
-Starting Simulation Types: PPO2, Random, Static
-Simulations per Type:      100
+Starting Simulation Types: PPO2, ACKTR, A2C, Random, Static
+Simulations per Type:      1000
 *********************************************************************
 Simulation Type: PPO2
 *********************
-Avg steps:        51.53
-Avg reward/step: -24.539
+Avg steps:        54.755
+Avg reward/step: -22.196
 Min steps:        4
-Max steps:        430
+Max steps:        435
 
 Defender wins:    0
-Attacker wins:    100
+Attacker wins:    1000
+*********************************************************************
+Simulation Type: ACKTR
+**********************
+Avg steps:        54.969
+Avg reward/step: -22.278
+Min steps:        4
+Max steps:        472
+
+Defender wins:    0
+Attacker wins:    1000
+*********************************************************************
+Simulation Type: A2C
+********************
+Avg steps:        57.034
+Avg reward/step: -22.048
+Min steps:        4
+Max steps:        467
+
+Defender wins:    0
+Attacker wins:    1000
 *********************************************************************
 Simulation Type: Random
 ***********************
-Avg steps:        49.53
-Avg reward/step: -22.054
+Avg steps:        52.682
+Avg reward/step: -22.519
 Min steps:        4
-Max steps:        178
+Max steps:        490
 
 Defender wins:    0
-Attacker wins:    100
+Attacker wins:    1000
 *********************************************************************
 Simulation Type: Static
 ***********************
-Avg steps:        4.4
-Avg reward/step: -48.229
+Avg steps:        4.051
+Avg reward/step: -49.743
 Min steps:        4
-Max steps:        16
+Max steps:        12
 
 Defender wins:    0
-Attacker wins:    100
+Attacker wins:    1000
 *********************************************************************
-PPO2 is the best algorithm with 51.53 avg steps.
+A2C is the best algorithm with 57.034 avg steps.
