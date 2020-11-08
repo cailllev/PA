@@ -8,6 +8,7 @@ import src.model.graph as g
 from typing import List, Tuple
 
 from pathlib import Path
+
 path = Path(__file__).parent / "../../config/attack_graphs.json"
 
 
@@ -30,6 +31,17 @@ end_node = nodes[-1]
 
 # -------------- GYM -------------- #
 rewards, simulation_steps = load_config(graph_name)
+bias_per_step = rewards["bias_per_step"]
+
+
+def get_restartable_nodes_count():
+    # type: () -> int
+    return len(graph.get_nodes()) - 2
+
+
+def get_detection_systems_count():
+    # type: () -> int
+    return len(graph.get_detection_systems())
 
 
 class MTDEnv(gym.Env):
@@ -48,7 +60,7 @@ class MTDEnv(gym.Env):
         self._total_reward = 0
 
         # first and last node are never restartable (start and finish)
-        self.action_space = gym.spaces.MultiDiscrete([len(nodes)-2, len(detection_systems)])
+        self.action_space = gym.spaces.MultiDiscrete([len(nodes) - 2, len(detection_systems)])
         self.observation_space = gym.spaces.Discrete(graph.get_progress_levels_count())
 
     # ------------------------- GYM ------------------------- #
@@ -61,13 +73,14 @@ class MTDEnv(gym.Env):
         # type: (List[int]) -> Tuple[int, int, bool, dict]
         """
         evaluate the given action, then simulate one time step for the attacker
-        action == 0: -> no action, action == 1 -> restart node[1], ..., action == n -> restart node[n]
+        action[0] == 0: -> no action, action[0] == 1 -> restart node[1], ..., action[0] == n -> restart node[n]
+        action[1] == 0: -> no action, action[1] == 1 -> restart detection system[0], ...
 
         :param action: the action from the RL agent, what to restart and what to switch
         :return: obs, reward, done, info
         """
         obs = 0  # progress of attacker before step simulation (0=unknown)
-        reward = 0
+        reward = bias_per_step
         done = False
 
         self._counter += 1
@@ -85,7 +98,7 @@ class MTDEnv(gym.Env):
                 self._attacker_pos = self._attacker_pos.get_prev()
 
         if switch_detection_system:
-            detection_systems[switch_detection_system].reset_prob()
+            detection_systems[switch_detection_system-1].reset_prob()
             reward += rewards["switch_detection_system"]
 
         # ---------------- simulate ---------------- #

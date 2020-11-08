@@ -158,7 +158,9 @@
 
       "in_honeypot": 1,
       "caught_attacker": 5,
-      "defender_wins": 100
+      "defender_wins": 100,
+
+      "bias_per_step": 30
     },
     "simulation_steps": 1000
   },

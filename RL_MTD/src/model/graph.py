@@ -182,10 +182,6 @@ class Graph:
         # type: () -> List["d.DetectionSystem"]
         return self._detection_systems
 
-    def get_detection_systems_count(self):
-        # type: () -> int
-        return len(self._detection_systems)
-
     def get_progress_levels_count(self):
         # type: () -> int
         return self._max_progress_level - self._min_progress_level + 1
