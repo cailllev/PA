@@ -1,0 +1,67 @@
+*********************************************************************
+Starting Simulation Types: A2C, ACKTR, PPO2, Defender2000, Random, Static
+Simulations per Type:      100
+Steps per Simulation:      1000
+*********************************************************************
+Simulation Type: A2C
+********************
+Avg steps:        909.29
+Avg reward/step:  27.206
+Min steps:        5
+Max steps:        1000
+
+Defender wins:    85
+Attacker wins:    15
+*********************************************************************
+Simulation Type: ACKTR
+**********************
+Avg steps:        874.74
+Avg reward/step:  27.016
+Min steps:        4
+Max steps:        1000
+
+Defender wins:    79
+Attacker wins:    21
+*********************************************************************
+Simulation Type: PPO2
+*********************
+Avg steps:        932.65
+Avg reward/step:  27.787
+Min steps:        113
+Max steps:        1000
+
+Defender wins:    86
+Attacker wins:    14
+*********************************************************************
+Simulation Type: Defender2000
+*****************************
+Avg steps:        132.71
+Avg reward/step:  15.342
+Min steps:        4
+Max steps:        1000
+
+Defender wins:    1
+Attacker wins:    99
+*********************************************************************
+Simulation Type: Random
+***********************
+Avg steps:        920.65
+Avg reward/step:  27.737
+Min steps:        98
+Max steps:        1000
+
+Defender wins:    80
+Attacker wins:    20
+*********************************************************************
+Simulation Type: Static
+***********************
+Avg steps:        4.52
+Avg reward/step:  -18.715
+Min steps:        4
+Max steps:        44
+
+Defender wins:    0
+Attacker wins:    100
+*********************************************************************
+PPO2 is the most effective algorithm with 932.65 avg steps.
+PPO2 is the most efficient algorithm with 27.787 avg reward/step.

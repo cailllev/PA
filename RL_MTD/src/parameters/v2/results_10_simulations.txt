@@ -1,66 +1,67 @@
 *********************************************************************
 Starting Simulation Types: A2C, ACKTR, PPO2, Defender2000, Random, Static
-Simulations per Type:      1000
+Simulations per Type:      10
+Steps per Simulation:      1000
 *********************************************************************
 Simulation Type: A2C
 ********************
-Avg steps:        908.514
-Avg reward/step:  27.364
-Min steps:        4
+Avg steps:        1000.0
+Avg reward/step:  27.902
+Min steps:        1000
 Max steps:        1000
 
-Defender wins:    829
-Attacker wins:    171
+Defender wins:    10
+Attacker wins:    0
 *********************************************************************
 Simulation Type: ACKTR
 **********************
 Avg steps:        1000.0
-Avg reward/step:  28.918
+Avg reward/step:  27.943
 Min steps:        1000
 Max steps:        1000
 
-Defender wins:    1000
+Defender wins:    10
 Attacker wins:    0
 *********************************************************************
 Simulation Type: PPO2
 *********************
-Avg steps:        999.483
-Avg reward/step:  32.811
-Min steps:        483
+Avg steps:        933.7
+Avg reward/step:  27.734
+Min steps:        337
 Max steps:        1000
 
-Defender wins:    999
+Defender wins:    9
 Attacker wins:    1
 *********************************************************************
 Simulation Type: Defender2000
 *****************************
-Avg steps:        135.359
-Avg reward/step:  15.983
+Avg steps:        114.0
+Avg reward/step:  15.548
 Min steps:        4
-Max steps:        926
+Max steps:        343
 
 Defender wins:    0
-Attacker wins:    1000
+Attacker wins:    10
 *********************************************************************
 Simulation Type: Random
 ***********************
-Avg steps:        896.623
-Avg reward/step:  27.242
-Min steps:        4
+Avg steps:        800.0
+Avg reward/step:  27.52
+Min steps:        68
 Max steps:        1000
 
-Defender wins:    818
-Attacker wins:    182
+Defender wins:    7
+Attacker wins:    3
 *********************************************************************
 Simulation Type: Static
 ***********************
-Avg steps:        4.035
-Avg reward/step:  -19.807
+Avg steps:        10.5
+Avg reward/step:  -9.958
 Min steps:        4
-Max steps:        14
+Max steps:        54
 
 Defender wins:    0
-Attacker wins:    1000
+Attacker wins:    10
 *********************************************************************
-ACKTR is the best algorithm with 1000.0 avg steps.
-ACKTR is the best rl algorithm with 1000.0 avg steps.
+A2C is the most effective algorithm with 1000.0 avg steps.
+ACKTR is the most efficient algorithm with 27.943 avg reward/step.
