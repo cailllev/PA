@@ -2,11 +2,10 @@ import random
 
 from typing import List
 
-# TODO check functionality, maybe switch IDS after catching attacker
-
 
 class Defender2000:
     def __init__(self, nodes_count, detection_systems_count):
+        # type: (int, int) -> None
         self._next_actions = []
 
         self._random_restart_threshold = 0.95
@@ -16,6 +15,7 @@ class Defender2000:
         self._detection_systems_count = detection_systems_count
 
     def _clear_next_actions(self):
+        # type: () -> None
         self._next_actions = []
 
     def _set_next_actions(self, obs):
@@ -56,7 +56,7 @@ class Defender2000:
             return action
 
     def predict(self, obs):
-        # type (int) -> List[int]
+        # type: (int) -> List[int]
         """
         set next actions when obs > 0 --> attacker was caught, else pick random
         :param obs:
