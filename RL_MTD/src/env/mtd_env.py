@@ -17,7 +17,7 @@ def load_config(name):
     f = open(path, "r")
     all_data = json.load(f)
     f.close()
-    return all_data[name]["rewards"], all_data[name]["simulation_steps"]
+    return all_data[name]["rewards"], all_data[name]["steps_per_simulation"]
 
 
 # ------------- MODEL ------------- #
@@ -30,7 +30,7 @@ start_node = nodes[0]
 end_node = nodes[-1]
 
 # -------------- GYM -------------- #
-rewards, simulation_steps = load_config(graph_name)
+rewards, steps_per_simulation = load_config(graph_name)
 bias_per_step = rewards["bias_per_step"]
 
 
@@ -50,7 +50,7 @@ class MTDEnv(gym.Env):
         self._attacker_pos = start_node
 
         self._counter = 0
-        self._simulation_steps = simulation_steps
+        self._steps_per_simulation = steps_per_simulation
 
         self._last_time_on_start = 0
         self._last_action = None
@@ -188,7 +188,7 @@ class MTDEnv(gym.Env):
 
     def defender_wins(self):
         # type: () -> bool
-        return self._counter >= self._simulation_steps
+        return self._counter >= self._steps_per_simulation
 
     def get_progress_history(self):
         # type: () -> List[int]
@@ -198,9 +198,9 @@ class MTDEnv(gym.Env):
         # type: () -> int
         return self._counter
 
-    def get_simulation_steps(self):
+    def get_steps_per_simulation(self):
         # type: () -> int
-        return self._simulation_steps
+        return self._steps_per_simulation
 
     def get_total_reward(self):
         # type: () -> int
