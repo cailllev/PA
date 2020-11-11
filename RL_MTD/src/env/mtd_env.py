@@ -8,7 +8,6 @@ import src.model.graph as g
 from typing import List, Tuple
 
 from pathlib import Path
-
 path = Path(__file__).parent / "../../config/attack_graphs.json"
 
 
@@ -18,6 +17,19 @@ def load_config(name):
     all_data = json.load(f)
     f.close()
     return all_data[name]["rewards"], all_data[name]["steps_per_simulation"]
+
+
+def get_restartable_nodes_count():
+    # type: () -> int
+    """
+    first and last node are never restartable (start and finish)
+    """
+    return len(nodes) - 2
+
+
+def get_detection_systems_count():
+    # type: () -> int
+    return len(detection_systems)
 
 
 # ------------- MODEL ------------- #
@@ -34,16 +46,6 @@ rewards, steps_per_simulation = load_config(graph_name)
 bias_per_step = rewards["bias_per_step"]
 
 
-def get_restartable_nodes_count():
-    # type: () -> int
-    return len(graph.get_nodes()) - 2
-
-
-def get_detection_systems_count():
-    # type: () -> int
-    return len(graph.get_detection_systems())
-
-
 class MTDEnv(gym.Env):
     def __init__(self):
         # type: () -> None
@@ -57,10 +59,12 @@ class MTDEnv(gym.Env):
         self._last_reward = 0
 
         self._progress_history = deque()
+        self._null_action_counter = 0
         self._total_reward = 0
 
-        # first and last node are never restartable (start and finish)
-        self.action_space = gym.spaces.MultiDiscrete([len(nodes) - 2, len(detection_systems)])
+        # stable baselines
+        self.action_space = gym.spaces.MultiDiscrete([get_restartable_nodes_count() + 1,
+                                                      get_detection_systems_count() + 1])
         self.observation_space = gym.spaces.Discrete(graph.get_progress_levels_count())
 
     # ------------------------- GYM ------------------------- #
@@ -73,6 +77,9 @@ class MTDEnv(gym.Env):
         # type: (List[int]) -> Tuple[int, int, bool, dict]
         """
         evaluate the given action, then simulate one time step for the attacker
+        action in Discrete: 0...restartable_nodes+detection_systems --> parse to MultiDiscrete
+        action in MultiDiscrete: [0...restartable_nodes, 0...detection_systems]
+
         action[0] == 0: -> no action, action[0] == 1 -> restart node[1], ..., action[0] == n -> restart node[n]
         action[1] == 0: -> no action, action[1] == 1 -> restart detection system[0], ...
 
@@ -117,9 +124,11 @@ class MTDEnv(gym.Env):
                 reward += rewards["caught_attacker"]
 
         # Attacker is in honeypot -> Detection System gets better
+        # & remove progression penalty from reward (gets added back later)
         if self._attacker_pos.is_honeypot():
             self._attacker_pos.get_detection_system().learn()
             obs = self._attacker_pos.get_progress_level()
+            reward -= self._attacker_pos.get_progress_level() * rewards["progression"]
 
         # Attacker getting into next node, only possible if not caught
         if not caught:
@@ -138,9 +147,6 @@ class MTDEnv(gym.Env):
         if self._attacker_pos == start_node:
             self._last_time_on_start = self._counter
 
-        if self._attacker_pos.is_honeypot():
-            self._attacker_pos.get_detection_system().learn()
-
         if self.attacker_wins():
             done = True
             reward += rewards["attacker_wins"]
@@ -150,6 +156,10 @@ class MTDEnv(gym.Env):
             reward += rewards["defender_wins"]
 
         self._progress_history.append(self._attacker_pos.get_progress_level())
+
+        if action is [0, 0]:
+            self._null_action_counter += 1
+
         self._total_reward += reward
         self._last_reward = reward
 
@@ -188,7 +198,7 @@ class MTDEnv(gym.Env):
 
     def defender_wins(self):
         # type: () -> bool
-        return self._counter >= self._steps_per_simulation
+        return self._counter >= self._steps_per_simulation and not self.attacker_wins()
 
     def get_progress_history(self):
         # type: () -> List[int]
@@ -206,6 +216,10 @@ class MTDEnv(gym.Env):
         # type: () -> int
         return self._total_reward
 
+    def get_null_action_ratio(self):
+        # type: () -> float
+        return self._null_action_counter / self._counter
+
     def __str__(self):
         # type: () -> str
         if self.attacker_wins():
@@ -215,7 +229,9 @@ class MTDEnv(gym.Env):
         else:
             winner = "still running..."
 
-        return f"winner: {winner}\nsteps: {self._counter}\ntotal_reward: {self._total_reward}"
+        return f"\nwinner:        {winner}\n" \
+               f"steps:         {self._counter}\n" \
+               f"total_reward:  {self._total_reward}"
 
 
 if __name__ == "__main__":

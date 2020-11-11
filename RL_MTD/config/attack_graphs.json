@@ -33,7 +33,7 @@
             "dt": "dpha"
           }
         },
-        "progress": -1
+        "progress": 1
       },
       "planner": {
         "previous": "authorizer",
@@ -65,7 +65,7 @@
             "dt": "dphp"
           }
         },
-        "progress": -1
+        "progress": 2
       },
       "DB1": {
         "previous": "planner",
@@ -156,7 +156,7 @@
       "progression": -10,
       "attacker_wins": -100,
 
-      "in_honeypot": 1,
+      "in_honeypot": 10,
       "caught_attacker": 5,
       "defender_wins": 100,
 
