@@ -1,0 +1,57 @@
+*********************************************************************
+Starting Simulation Types: A2C, PPO, Random, Defender2000, Static
+Simulations per Type:      1000
+Steps per Simulation:      1000
+*********************************************************************
+Simulation Type: A2C
+********************
+Avg steps:        811.238
+Avg reward/step:  25.07
+Min steps:        4
+Max steps:        1000
+
+Defender wins:    661
+Attacker wins:    339
+*********************************************************************
+Simulation Type: PPO
+********************
+Avg steps:        801.21
+Avg reward/step:  25.073
+Min steps:        4
+Max steps:        1000
+
+Defender wins:    654
+Attacker wins:    346
+*********************************************************************
+Simulation Type: Random
+***********************
+Avg steps:        826.696
+Avg reward/step:  25.31
+Min steps:        4
+Max steps:        1000
+
+Defender wins:    684
+Attacker wins:    316
+*********************************************************************
+Simulation Type: Defender2000
+*****************************
+Avg steps:        143.097
+Avg reward/step:  16.717
+Min steps:        4
+Max steps:        1000
+
+Defender wins:    4
+Attacker wins:    996
+*********************************************************************
+Simulation Type: Static
+***********************
+Avg steps:        4.053
+Avg reward/step:  -19.72
+Min steps:        4
+Max steps:        8
+
+Defender wins:    0
+Attacker wins:    1000
+*********************************************************************
+Random is the most effective algorithm with 826.696 avg steps.
+Random is the most efficient algorithm with 25.31 avg reward/step.

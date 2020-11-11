@@ -1,7 +1,7 @@
 import unittest
 
 from src.env.mtd_env import MTDEnv
-from stable_baselines.common.env_checker import check_env
+from stable_baselines3.common.env_checker import check_env
 
 
 class DetectionSystemTest(unittest.TestCase):

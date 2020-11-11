@@ -1,0 +1,82 @@
+*********************************************************************
+Starting Simulation Types: A2C, PPO, Random, Defender2000, Static
+Simulations per Type:      10
+Steps per Simulation:      1000
+*********************************************************************
+Simulation Type:          A2C
+--------------------------------------------------------------------
+Avg steps:                793.1
+Avg reward/step:          25.84
+Avg null action ratio:    0.0
+
+Min steps:                77
+Max steps:                1000
+
+Defender wins:            6
+Attacker wins:            4
+
+Steps each sim:           [511, 1000, 964, 1000, 379, 1000, 77, 1000, 1000, 1000]
+Reward each sim:          [12963, 26022, 24793, 26043, 9592, 25943, 1756, 25757, 26026, 26043]
+*********************************************************************
+Simulation Type:          PPO
+--------------------------------------------------------------------
+Avg steps:                830.1
+Avg reward/step:          25.872
+Avg null action ratio:    0.0
+
+Min steps:                48
+Max steps:                1000
+
+Defender wins:            7
+Attacker wins:            3
+
+Steps each sim:           [1000, 783, 1000, 470, 1000, 1000, 1000, 48, 1000, 1000]
+Reward each sim:          [26347, 20077, 25806, 11827, 26490, 25743, 25901, 1015, 25675, 25883]
+*********************************************************************
+Simulation Type:          Random
+--------------------------------------------------------------------
+Avg steps:                952.8
+Avg reward/step:          26.004
+Avg null action ratio:    0.0
+
+Min steps:                770
+Max steps:                1000
+
+Defender wins:            7
+Attacker wins:            3
+
+Steps each sim:           [1000, 932, 1000, 1000, 1000, 770, 1000, 826, 1000, 1000]
+Reward each sim:          [26129, 23766, 26169, 25929, 25973, 20143, 26016, 21472, 26148, 26024]
+*********************************************************************
+Simulation Type:          Defender2000
+--------------------------------------------------------------------
+Avg steps:                77.0
+Avg reward/step:          26.171
+Avg null action ratio:    0.0
+
+Min steps:                4
+Max steps:                179
+
+Defender wins:            0
+Attacker wins:            10
+
+Steps each sim:           [179, 24, 33, 153, 69, 75, 4, 152, 4, 77]
+Reward each sim:          [5153, 457, 702, 4206, 1651, 1926, -87, 4137, -80, 2087]
+*********************************************************************
+Simulation Type:          Static
+--------------------------------------------------------------------
+Avg steps:                6.1
+Avg reward/step:          -6.639
+Avg null action ratio:    0.0
+
+Min steps:                4
+Max steps:                15
+
+Defender wins:            0
+Attacker wins:            10
+
+Steps each sim:           [4, 5, 8, 15, 4, 4, 4, 4, 9, 4]
+Reward each sim:          [-80, -45, -15, 115, -80, -80, -80, -80, 20, -80]
+*********************************************************************
+Random is the most effective algorithm with 952.8 avg steps.
+Defender2000 is the most efficient algorithm with 26.171 avg reward/step.

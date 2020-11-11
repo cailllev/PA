@@ -1,9 +1,21 @@
-from stable_baselines.common.policies import MlpPolicy
-# from stable_baselines.deepq.policies import DQNPolicy
-from stable_baselines import A2C, ACKTR, PPO2  # , ACER, DQN
+from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3 import A2C, PPO
 
 from src.env.mtd_env import MTDEnv, get_restartable_nodes_count, get_detection_systems_count
 from src.defender2000 import Defender2000
+
+from datetime import datetime
+import time
+
+# stable baselines3 agents
+# Name      Box         Discrete    MultiD.     MultiBinary Multi Processing
+# A2C       1           1           1           1           1   ️
+# DDPG      1           -           -           -           -
+# DQN       -           1           -           -           -
+# HER       1           1           -           -           -
+# PPO       1           1           1           1           1
+# SAC       1           -           -           -           -
+# TD3       1           -           -           -           -
 
 # https://medium.com/@SmartLabAI/reinforcement-learning-algorithms-an-intuitive-overview-904e2dff5bbc#2bfa
 #
@@ -11,49 +23,22 @@ from src.defender2000 import Defender2000
 #   Model Free
 #       Policy Optimization (ActorCriticRLModel)
 #           A2C     Advantage Actor Critic
-#           ***         - Advantage: Similarly to PG where the update rule used the dicounted returns from a set of
+#                       - Advantage: Similarly to PG where the update rule used the dicounted returns from a set of
 #                       experiences in order to tell the agnet which acttions were “good” or “bad”.
 #                       - Actor-critic: combines the benefits of both approaches from policy-iteration method as PG and
 #                       value-iteration method as Q-learning (See below). The network will estimate both a value
 #                       function V(s) (how good a certain state is to be in) and a policy π(s).
 #
-#           ACER    Actor-Critic with Experience Replay
-#                       ------------------------------------------------------------------------------------------------
-#                       -> ValueError: ACER does not work with MultiDiscrete([7 2]) actions space
-#                       maybe fixable with just one Discrete action space, just append all actions in one list?
-#                       ------------------------------------------------------------------------------------------------
-#                       <no ducomentation for ACER>
-#
-#           ACKTR   Actor Critic using Kronecker-Factored Trust Region
-#           *****       <no ducomentation for ACTKR>
-#
-#           PP01    Proximal Policy Optimization algorithm (MPI version)
-#                       ------------------------------------------------------------------------------------------------
-#                       -> ImportError: cannot import name 'PPO1' from 'stable_baselines'
-#                       unfixable?
-#                       ------------------------------------------------------------------------------------------------
+#           PPO    Proximal Policy Optimization algorithm
 #                       Also an on-policy algorithm which similarly to TRPO can perform on discrete or continuous action
 #                       spaces. PPO shares motivation with TRPO in the task of answering the question: how to increase
 #                       policy improvement without the risk of performance collapse? The idea is that PPO improves the
 #                       stability of the Actor training by limiting the policy update at each training step.
 #
-#           PP02    Proximal Policy Optimization algorithm (GPU version)
-#           ****        <see above>
-#
-#           TRPO    Trust Region Policy Optimization
-#                       ------------------------------------------------------------------------------------------------
-#                       -> ImportError: cannot import name 'TRPO' from 'stable_baselines'
-#                       unfixable?
-#                       ------------------------------------------------------------------------------------------------
-#                       A on-policy algorithm that can be used or environments with either discrete or continuous action
-#                       spaces. TRPO updates policies by taking the largest step possible to improve performance, while
-#                       satisfying a special constraint on how close the new and old policies are allowed to be.
-#
 #       Q-Learning
 #           DQN     Deep Q Neural Network (OffPolicyRLModel)
 #                       ------------------------------------------------------------------------------------------------
-#                       -> AssertionError: Error: the action space for DQN must be of type gym.spaces.Discrete
-#                       maybe fixable with just one Discrete action space, just append all actions in one list?
+#                       Too much overhead to implement DQN, plus DQN is even worse than Defender2000 after initial tests
 #                       ------------------------------------------------------------------------------------------------
 #                       DQN is Q-learning with Neural Networks . The motivation behind is simply related to big state
 #                       space environments where defining a Q-table would be a very complex, challenging and time-
@@ -62,9 +47,10 @@ from src.defender2000 import Defender2000
 #
 #           HER     Hindsight Experience Replay (BaseRLModel)
 #                       ------------------------------------------------------------------------------------------------
-#                       -> AttributeError: 'Discrete' object has no attribute 'spaces'
-#                       HER works with continous action space, presumably very hard or even impossible to create a
-#                       useful translation from discrete to continous?
+#                       Too many challanges to implement HER, unfixable with current setup. Initial list of requirements
+#                           - cannot use normal env, needs VecEnv (but not DummyVecEnv, doesnt work)
+#                           - cannot create env in SubProcEnv, multiprocessing exception
+#                           - cannot use MultiDiscrete
 #                       ------------------------------------------------------------------------------------------------
 #                       In Hindsight Experience Replay method, basically a DQN is suplied with a state and a desired
 #                       end-state, or in other words goal. It allow to quickly learn when the rewards are sparse. In
@@ -74,8 +60,7 @@ from src.defender2000 import Defender2000
 #       Hybrid (OffPolicyRLModel)
 #           DDPG    Deep Deterministic Policy Gradient
 #                       ------------------------------------------------------------------------------------------------
-#                       -> ImportError: cannot import name 'DDPG' from 'stable_baselines'
-#                       unfixable?
+#                       only Box space supported, not fixable (and not reasonable to use)!
 #                       ------------------------------------------------------------------------------------------------
 #                       https://arxiv.org/pdf/1802.09477.pdf
 #                       [...] Our algorithm builds on Double Q-learning, by taking the minimum value between a pair of
@@ -85,22 +70,7 @@ from src.defender2000 import Defender2000
 #
 #           SAC     Soft Actor Critic
 #                       ------------------------------------------------------------------------------------------------
-#                       SAC only supports Box as action space (binary)
-#                       https://stable-baselines.readthedocs.io/en/master/modules/sac.html#can-i-use
-#
-#                       plus the SAC object cannot be instantiated, probably unfixable (see below)
-#                       1)    File "../RL_MTD/src/rl_mtd.py", line 133, in <module>
-#                               "SAC": SAC(MlpPolicy, env, verbose=0, n_env=1, n_steps=simulations_count, n_batch=1),
-#                           TypeError: __init__() got an unexpected keyword argument 'n_env'
-#
-#                       2)    File "../PA_MTD/RL_MTD/src/rl_mtd.py", line 134, in <module>
-#                               "SAC": SAC(MlpPolicy, env, verbose=0),
-#                             File "..\Python37\lib\site-packages\stable_baselines\sac\sac.py", line 124, in __init__
-#                               self.setup_model()
-#                             File "..\Python37\lib\site-packages\stable_baselines\sac\sac.py", line 144, in setup_model
-#                               **self.policy_kwargs)
-#                           TypeError: __init__() missing 3 required positional arguments: 'n_env', 'n_steps', and
-#                           'n_batch'
+#                       only Box space supported, not fixable (and not reasonable to use)!
 #                       ------------------------------------------------------------------------------------------------
 #                       https://arxiv.org/abs/1801.01290
 #                       [...]. By combining off-policy updates with a stable stochastic actor-critic formulation, our
@@ -109,7 +79,7 @@ from src.defender2000 import Defender2000
 #
 #           TD3     Twin Delayed DDPG
 #                       ------------------------------------------------------------------------------------------------
-#                       exactly the same error as in SAC, also probably unfixable
+#                       only Box space supported, not fixable (and not reasonable to use)!
 #                       ------------------------------------------------------------------------------------------------
 #                       https://arxiv.org/pdf/1509.02971.pdf
 #                       We adapt the ideas underlying the success of Deep Q-Learning to the continuous
@@ -120,37 +90,52 @@ from src.defender2000 import Defender2000
 #       * no support from stable_baselines plus not usefull because agent cannot predict the next state most of the time
 
 
+print("Starting rl_mtd.py")
+
+# ------------------------- const ------------------------- #
 rl = "RL"
-defender2000 = "Defender2000"
 random = "Random"
+defender2000 = "Defender2000"
 static = "Static"
 
-non_rl = [defender2000, random, static]
+non_rl = [random, defender2000, static]
 
 # ------------------------- config ------------------------- #
 learn = False
 timesteps = 10 ** 6
 
-simulate_only_best = False
 simulations_count = 100
 
+show_model_after_each_step = False
+show_results_after_each_sim = False
+
+# ------------------------- init ------------------------- #
 env = MTDEnv()
 
-# only to learn, Random and Static are added later
+# only to learn, Defender2000, Random and Static are added later
 algorithms = {
-    "A2C": A2C(MlpPolicy, env, verbose=0, n_steps=simulations_count),
-    "ACKTR": ACKTR(MlpPolicy, env, verbose=0, n_steps=simulations_count),
-    "PPO2": PPO2(MlpPolicy, env, verbose=0, n_steps=simulations_count),
-    # "DQN": DQN(DQNPolicy, env, verbose=0),
-    # "HER": HER(MlpPolicy, env, verbose=0, n_steps=simulations_count, model_class=DQN, n_sampled_goal=0),
-    # "SAC": SAC(MlpPolicy, env, verbose=0),
-    # "TD3": TD3(MlpPolicy, env, verbose=0)
+    "A2C": A2C(ActorCriticPolicy, env, n_steps=simulations_count, verbose=0),
+    "PPO": PPO(ActorCriticPolicy, env, n_steps=simulations_count, verbose=0),
 }
 
-parameters_folder = "parameters/v2/"
+# times estimations
+base_learn_time_estimate = (timesteps / 10 ** 5) * 60
+alorithm_learn_times = {
+    "A2C": base_learn_time_estimate * 0.9,
+    "PPO": base_learn_time_estimate * 3
+}
+
+sim_time_estimate = simulations_count * 1.5
+
+
+parameters_folder = "parameters/v3/"
 results_file = f"{parameters_folder}results_{simulations_count}_simulations.txt"
 extensive_results_file = f"{parameters_folder}extensive_results_{simulations_count}_simulations.txt"
-# TODO, write all steps (per simulation), write null actions percentage for better evaluation
+
+
+def timestamp_to_datetime(stamp):
+    # type: (float) -> str
+    return datetime.fromtimestamp(stamp).strftime('%I:%M:%S')
 
 
 # ------------------------ learning ------------------------ #
@@ -160,6 +145,7 @@ if learn:
     for algorithm in algorithms:
 
         model = algorithms[algorithm]
+        env.reset()
 
         print("*********************************************")
         print(f"Learning {algorithm}.")
@@ -168,143 +154,37 @@ if learn:
             model.load(parameters_folder + algorithm)
             print(f"Found parameters.")
 
-        except ValueError:
+        except FileNotFoundError:
             print(f"No learned parameters found, start from scratch.")
 
-        print(f"{timesteps} steps to simulate.")
-        print(f"Estimated time: {timesteps / 10 ** 5} min.")
-        print("...")
-
-        import time
-
         start = time.time()
+
+        print(f"{timesteps} steps to simulate.")
+        print(f"Start:              {timestamp_to_datetime(start)}.")
+        print(f"Estimated finish:   {timestamp_to_datetime(start+alorithm_learn_times[algorithm])}.")
+        print("...")
 
         model.learn(total_timesteps=timesteps)
         model.save(parameters_folder + algorithm)
 
-        print(f"{round(time.time() - start)} seconds to simulate {timesteps} steps.")
+        print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
 
 # ------------------------ simulation helpers ------------------------ #
 best_avg_steps = [0, random]
 best_avg_reward = [0, random]
-show_model_after_each_step = False
-show_results_after_each_sim = False
 
-
-def get_best_algorithm():
-    # type: () -> str
-    """
-    get the best rl algorithm
-    :return:
-    """
-    try:
-        file = open(results_file)
-        last_line = None
-        for line in file:
-            last_line = line
-        file.close()
-
-        return last_line.split(" ")[0]
-
-    except FileNotFoundError:
-        return random
-
-
-if simulate_only_best:
-    # delete all algorihms except the best from dict
-    best_algo = get_best_algorithm()
-    for algo in algorithms:
-        if algorithms[algo] == best_algo:
-            val = algorithms[algo]
-            algorithms.clear()
-            algorithms[algo] = val
-            break
-
-# add non rl algorithms (own, random and static) for evaluation
-algorithms[defender2000] = Defender2000(get_restartable_nodes_count(), get_detection_systems_count())
+# add non rl algorithms (random, defender2000 and static) for evaluation
 algorithms[random] = random
+algorithms[defender2000] = Defender2000(get_restartable_nodes_count(), get_detection_systems_count())
 algorithms[static] = static
 
-results = dict.fromkeys(algorithms)
-# restults = {
-#   "PP02": {
-#       "steps": List[int],
-#       "total_reward": List[int],
-#       "min_steps": int,
-#       "max_steps": int,
-#       "avg_steps": float,
-#       "avg_rewards": float
-#   },
-#   ...,
-#   "Defender2000": {...},
-#   "Random": {...},
-#   "Static": {...}
-# }
 
+start = time.time()
 print("*********************************************")
 print(f"Prepared to simulate {', '.join(algorithms.keys())} with {simulations_count} simulations.")
-print(f"Estimated time to simulate all algoritmns: {simulations_count * (len(algorithms.keys()) - 3) / 300} min")
+print(f"Start:              {timestamp_to_datetime(start)}.")
+print(f"Estimated finish:   {timestamp_to_datetime(start+sim_time_estimate)}.")
 print("...")
-
-
-def update_results(algo_name):
-    global results
-    results[algo_name]["steps"].append(env.get_counter())
-    results[algo_name]["total_reward"].append(env.get_total_reward() / env.get_counter())
-
-    if env.defender_wins():
-        results[algo_name]["defender_wins"] += 1
-
-    if env.get_counter() < results[algo_name]["min_steps"]:
-        results[algo_name]["min_steps"] = env.get_counter()
-
-    if env.get_counter() > results[algo_name]["max_steps"]:
-        results[algo_name]["max_steps"] = env.get_counter()
-
-    if show_results_after_each_sim:
-        print("\n" + str(env))
-
-
-def evaluate_and_save_results(algo_name):
-    global results
-    global best_avg_steps
-    global best_avg_reward
-
-    sum_steps = 0
-    for steps in results[algo_name]["steps"]:
-        sum_steps += steps
-
-    sum_rewards = 0
-    for total_rewards in results[algo_name]["total_reward"]:
-        sum_rewards += total_rewards
-
-    avg_steps = round(sum_steps / simulations_count, 3)
-    avg_reward = round(sum_rewards / simulations_count, 3)
-
-    if avg_steps > best_avg_steps[0]:
-        best_avg_steps = [avg_steps, algo_name]
-
-    if avg_reward > best_avg_reward[0]:
-        best_avg_reward = [avg_reward, algo_name]
-
-    min_steps = results[algo_name]["min_steps"]
-    max_steps = results[algo_name]["max_steps"]
-
-    results[algo_name]["avg_steps"] = avg_steps
-    results[algo_name]["avg_reward"] = avg_reward
-
-    defender_wins = results[algo_name]['defender_wins']
-    attacker_wins = simulations_count - defender_wins
-
-    f.write("*********************************************************************\n")
-    f.write(f"Simulation Type: {algo_name}\n")
-    f.write(f"*****************{'*' * len(algo_name)}\n")
-    f.write(f"Avg steps:        {avg_steps}\n")
-    f.write(f"Avg reward/step:  {avg_reward}\n")
-    f.write(f"Min steps:        {min_steps}\n")
-    f.write(f"Max steps:        {max_steps}\n\n")
-    f.write(f"Defender wins:    {defender_wins}\n")
-    f.write(f"Attacker wins:    {attacker_wins}\n")
 
 
 def run_simulation(algorithm_type, m):
@@ -335,6 +215,66 @@ def run_simulation(algorithm_type, m):
             env.render()
 
 
+def update_results():
+    global results
+    results["steps"].append(env.get_counter())
+    results["total_reward"].append(env.get_total_reward())
+    results["null_action_ratio"] += env.get_null_action_ratio()
+
+    if env.defender_wins():
+        results["defender_wins"] += 1
+
+    if env.get_counter() < results["min_steps"]:
+        results["min_steps"] = env.get_counter()
+
+    if env.get_counter() > results["max_steps"]:
+        results["max_steps"] = env.get_counter()
+
+    if show_results_after_each_sim:
+        print("\n" + str(env))
+
+
+def evaluate_and_save_results(algo_name):
+    global results
+    global best_avg_steps
+    global best_avg_reward
+
+    steps = results["steps"]
+    rewards = results["total_reward"]
+
+    sum_steps = sum(steps)
+    sum_rewards = sum(rewards)
+
+    avg_steps = round(sum_steps / simulations_count, 3)
+    avg_reward = round(sum_rewards / sum_steps, 3)
+    avg_null_action_ratio = round(results["null_action_ratio"] / simulations_count, 3)
+
+    if avg_steps > best_avg_steps[0]:
+        best_avg_steps = [avg_steps, algo_name]
+
+    if avg_reward > best_avg_reward[0]:
+        best_avg_reward = [avg_reward, algo_name]
+
+    min_steps = results["min_steps"]
+    max_steps = results["max_steps"]
+
+    defender_wins = results['defender_wins']
+    attacker_wins = simulations_count - defender_wins
+
+    f.write("*********************************************************************\n")
+    f.write(f"Simulation Type:          {algo_name}\n")
+    f.write(f"--------------------------------------------------------------------\n")
+    f.write(f"Avg steps:                {avg_steps}\n")
+    f.write(f"Avg reward/step:          {avg_reward}\n")
+    f.write(f"Avg null action ratio:    {avg_null_action_ratio}\n\n")
+    f.write(f"Min steps:                {min_steps}\n")
+    f.write(f"Max steps:                {max_steps}\n\n")
+    f.write(f"Defender wins:            {defender_wins}\n")
+    f.write(f"Attacker wins:            {attacker_wins}\n\n")
+    f.write(f"Steps each sim:           {steps}\n")
+    f.write(f"Reward each sim:          {rewards}\n")
+
+
 # ------------------------ actual simulation ------------------------ #
 f = open(results_file, "w")
 f.write("*********************************************************************\n")
@@ -349,26 +289,31 @@ for algorithm in algorithms:
             model = algorithms[algorithm]
             model.load(parameters_folder + algorithm)
         except ValueError:
-            f.write(f"{algorithm} not trained yet, skipping to next algo\n")
+            f.write(f"Algorithm not yet trained: {algorithm}\n")
             continue
     else:
         algo_type = algorithm
         model = algorithms[algorithm]
 
-    results[algorithm] = {}
-    results[algorithm]["steps"] = []
-    results[algorithm]["min_steps"] = env.get_steps_per_simulation()
-    results[algorithm]["max_steps"] = 0
-    results[algorithm]["total_reward"] = []
-    results[algorithm]["defender_wins"] = 0
+    # init or clear results
+    results = {
+        "null_action_ratio": 0,
+        "min_steps": env.get_steps_per_simulation(),
+        "max_steps": 0,
+        "defender_wins": 0,
+        "steps": [],
+        "total_reward": []
+    }
 
     for _ in range(simulations_count):
         # run 1 simulation (until attacker or defender wins)
         run_simulation(algo_type, model)
 
-        update_results(algorithm)
+        update_results()
 
     evaluate_and_save_results(algorithm)
+
+print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
 
 f.write("*********************************************************************\n")
 f.write(f"{best_avg_steps[1]} is the most effective algorithm with {best_avg_steps[0]} avg steps.\n")
