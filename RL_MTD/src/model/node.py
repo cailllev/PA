@@ -94,6 +94,5 @@ class Node:
         return " -> ".join([
             self._prev.get_name() if self._prev else "null",
             "*" + self._name + "*",
-            "{" + ", ".join([node.get_name() for node in self._next]) + "}" if self._next else "null"
-            ]) + \
-            "; " + (self._detection_system.get_name() if self._detection_system else "null")
+            "{" + ", ".join([node.get_name() for node in self._next]) + "}" if self._next else "{null}"
+            ])

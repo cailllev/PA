@@ -5,8 +5,8 @@
         "previous": null,
         "next": {
           "authorizer": {
-            "init": "pa0",
-            "dt": "dpa"
+            "init": "p_auth_0",
+            "dt": "dp_auth"
           }
         },
         "progress": 0
@@ -15,12 +15,12 @@
         "previous": "internet",
         "next": {
           "planner": {
-            "init": "pp0",
-            "dt": "dpp"
+            "init": "p_plan_0",
+            "dt": "dp_plan"
           },
           "honeypot_authorizer": {
-            "init": "pah0",
-            "dt": "dpah"
+            "init": "p_auth_to_honey_0",
+            "dt": "dp_auth_to_honey"
           }
         },
         "progress": 1
@@ -29,8 +29,8 @@
         "previous": "authorizer",
         "next": {
           "authorizer": {
-            "init": "pha0",
-            "dt": "dpha"
+            "init": "p_honey_to_auth_0",
+            "dt": "dp_honey_to_auth"
           }
         },
         "progress": 1
@@ -39,20 +39,20 @@
         "previous": "authorizer",
         "next": {
           "DB1": {
-            "init": "pdb10",
-            "dt": "dpdb1"
+            "init": "p_db1_0",
+            "dt": "dp_db1"
           },
           "DB2": {
-            "init": "pdb20",
-            "dt": "dpdb2"
+            "init": "p_db2_0",
+            "dt": "dp_db2"
           },
           "DB3": {
-            "init": "pdb30",
-            "dt": "dpdb3"
+            "init": "p_db3_0",
+            "dt": "dp_db3"
           },
           "honeypot_planner": {
-            "init": "pph0",
-            "dt": "dphp"
+            "init": "p_plan_to_honey_0",
+            "dt": "dp_plan_to_honey"
           }
         },
         "progress": 2
@@ -61,8 +61,8 @@
         "previous": "planner",
         "next": {
           "planner": {
-            "init": "php0",
-            "dt": "dphp"
+            "init": "p_honey_to_plan_0",
+            "dt": "dp_honey_to_plan"
           }
         },
         "progress": 2
@@ -71,8 +71,8 @@
         "previous": "planner",
         "next": {
           "extracted_data": {
-            "init": "pe0",
-            "dt": "dpe"
+            "init": "p_e_0",
+            "dt": "dp_e"
           }
         },
         "progress": 3
@@ -81,8 +81,8 @@
         "previous": "planner",
         "next": {
           "extracted_data": {
-            "init": "pe0",
-            "dt": "dpe"
+            "init": "p_e_0",
+            "dt": "dp_e"
           }
         },
         "progress": 3
@@ -91,8 +91,8 @@
         "previous": "planner",
         "next": {
           "extracted_data": {
-            "init": "pe0",
-            "dt": "dpe"
+            "init": "p_e_0",
+            "dt": "dp_e"
           }
         },
         "progress": 3
@@ -108,59 +108,62 @@
         "after_nodes": ["internet", "authorizer", "honeypot_authorizer", "planner", "honeypot_planner"],
         "reset_node": "internet",
         "probs": {
-          "init": "pIDS0",
-          "de": "dpIDS"
+          "init": "p_IDS_0",
+          "de": "dp_IDS"
         }
       },
       "PS": {
         "after_nodes": ["DB1", "DB2", "DB3"],
         "reset_node": "internet",
         "probs": {
-          "init": "pPS0",
-          "de": "dpPS"
+          "init": "p_PS_0",
+          "de": "dp_PS"
         }
       }
     },
     "attacks": {
       "simple": {
-        "pa0": 0.2,
-        "dpa": 0.02,
-        "pp0": 0.2,
-        "dpp": 0.02,
-        "pdb10": 0.2,
-        "dpdb1": 0.02,
-        "pdb20": 0.2,
-        "dpdb2": 0.02,
-        "pdb30": 0.2,
-        "dpdb3": 0.02,
-        "pah0": 0.2,
-        "dpah": -0.01,
-        "pha0": 0.0,
-        "dpha": 0.1,
-        "pph0": 0.2,
-        "dpph": -0.01,
-        "php0": 0.0,
-        "dphp": 0.1,
-        "pe0": 1,
-        "dpe": 0,
-
-        "pIDS0": 0.983,
-        "dpIDS": 0.5,
-        "pPS0": 0.6,
-        "dpPS": 0.5
+        "nodes": {
+          "p_auth_0": 0.2,
+          "dp_auth": 0.02,
+          "p_plan_0": 0.2,
+          "dp_plan": 0.02,
+          "p_db1_0": 0.2,
+          "dp_db1": 0.02,
+          "p_db2_0": 0.2,
+          "dp_db2": 0.02,
+          "p_db3_0": 0.2,
+          "dp_db3": 0.02,
+          "p_auth_to_honey_0": 0.3,
+          "dp_auth_to_honey": -0.01,
+          "p_honey_to_auth_0": 0.0,
+          "dp_honey_to_auth": 0.1,
+          "p_plan_to_honey_0": 0.3,
+          "dp_plan_to_honey": -0.01,
+          "p_honey_to_plan_0": 0.0,
+          "dp_honey_to_plan": 0.1,
+          "p_e_0": 1,
+          "dp_e": 0
+        },
+        "detection_systems": {
+          "p_IDS_0": 0.983,
+          "dp_IDS": 0.5,
+          "p_PS_0": 0.6,
+          "dp_PS": 0.5
+        }
       }
     },
     "rewards": {
       "switch_detection_system": -2,
       "restart_node": -5,
-      "progression": -10,
-      "attacker_wins": -100,
+      "progression": -20,
+      "attacker_wins": -40,
 
       "in_honeypot": 10,
       "caught_attacker": 5,
       "defender_wins": 100,
 
-      "bias_per_step": 30
+      "bias_per_step": 5
     },
     "steps_per_simulation": 1000
   },

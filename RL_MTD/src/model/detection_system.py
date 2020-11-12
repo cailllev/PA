@@ -1,11 +1,11 @@
 import src.model.node as n
 
-from typing import Dict
+from typing import Dict, List
 
 
 class DetectionSystem:
-    def __init__(self, name, probs, reset_node):
-        # type: (str, Dict[str, float], "n.Node") -> None
+    def __init__(self, name, probs, reset_node, after_nodes):
+        # type: (str, Dict[str, float], "n.Node", List[str]) -> None
         """
         :param name: the name of this system
         :param probs: the prob of catching attacker and its change after catching attacker
@@ -16,6 +16,7 @@ class DetectionSystem:
         self._p = probs["init"]
         self._de = probs["de"]
         self._reset_node = reset_node
+        self._after_nodes = after_nodes
 
     def get_name(self):
         # type: () -> str
@@ -45,4 +46,6 @@ class DetectionSystem:
         return self._reset_node
 
     def __str__(self):
-        return self._name + " -> " + self._reset_node.get_name()
+        return self._name \
+               + " -> {" + ", ".join(self._after_nodes) + "} !" \
+               + " -> " + self._reset_node.get_name()

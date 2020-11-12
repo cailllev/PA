@@ -28,7 +28,8 @@ class Graph:
         """
         graph_data = load_graph_data(graph_name)
         nodes_data = graph_data["nodes"]
-        attack_data = graph_data["attacks"][attack_name]
+        nodes_attack_data = graph_data["attacks"][attack_name]["nodes"]
+        detection_systems_attack_data = graph_data["attacks"][attack_name]["detection_systems"]
         detection_system_data = graph_data["detection_systems"]
 
         self._nodes = []
@@ -37,8 +38,8 @@ class Graph:
         self._max_progress_level = -1000
 
         self._init_nodes(nodes_data)
-        self._init_node_probs(attack_data)
-        self._init_detection_systems(detection_system_data, attack_data)
+        self._init_node_probs(nodes_attack_data)
+        self._init_detection_systems(detection_system_data, detection_systems_attack_data)
 
     def _init_nodes(self, nodes_data):
         # type: (dict) -> None
@@ -97,6 +98,7 @@ class Graph:
         looks up the probs in the nodes and sets numerical values according to attack data
         :param attack_data: name and value of all probs
         """
+        used_keys = []
 
         # write parameters from json to nodes
         for node in self._nodes:
@@ -109,6 +111,8 @@ class Graph:
                     for key in attack_data:
                         if next_nodes[next_node][prob] == key:
                             next_nodes[next_node][prob] = attack_data[key]
+                            if not used_keys.__contains__(key):
+                                used_keys.append(key)
                             found_prob = True
                             break
 
@@ -116,7 +120,12 @@ class Graph:
 
             node.set_next(next_nodes)
 
-        # add a current prob (equal to init)
+        if len(attack_data) != len(used_keys):
+            for key in used_keys:
+                attack_data.pop(key)
+            assert False, f"Error, unused key(s) from attack data: {str(attack_data)}"
+
+        # add the current prob (equal to init)
         for node in self._nodes:
             for next_node in node.get_next():
                 node.reset_probs(next_node)
@@ -129,6 +138,7 @@ class Graph:
         :param detection_system_data: all data regarding a detection system
         :param attack_data: the probability of catching an attacker and change in probability after catching
         """
+        used_keys = []
 
         for detection_system in detection_system_data:
 
@@ -140,11 +150,14 @@ class Graph:
                 for key in attack_data:
                     if detection_system_data[detection_system]["probs"][prob] == key:
                         probs[prob] = attack_data[key]
+                        if not used_keys.__contains__(key):
+                            used_keys.append(key)
                         found_prob = True
                         break
 
                 assert found_prob, f"Error, did not find prob {prob} for {detection_system}"
 
+            # get reset node
             reset_node_name = detection_system_data[detection_system]["reset_node"]
             found_reset_node = False
             for node in self._nodes:
@@ -155,7 +168,8 @@ class Graph:
 
             assert found_reset_node, f"Error, did not find reset node {reset_node_name} for {detection_system}"
 
-            self._detection_systems.append(d.DetectionSystem(detection_system, probs, reset_node_name))
+            self._detection_systems.append(d.DetectionSystem(detection_system, probs, reset_node_name,
+                                                             detection_system_data[detection_system]["after_nodes"]))
 
             # assign detection system to nodes
             nodes_names = detection_system_data[detection_system]["after_nodes"]
@@ -169,6 +183,11 @@ class Graph:
                         break
 
                 assert found_node, f"Error, did not find node {name} for {detection_system}"
+
+        if len(attack_data) != len(used_keys):
+            for key in used_keys:
+                attack_data.pop(key)
+            assert False, f"Error, unused key(s) from attack data: {str(attack_data)}"
 
     def get_nodes(self):
         # type: () -> List[n.Node]
