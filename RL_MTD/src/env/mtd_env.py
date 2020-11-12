@@ -157,7 +157,7 @@ class MTDEnv(gym.Env):
 
         self._progress_history.append(self._attacker_pos.get_progress_level())
 
-        if action is [0, 0]:
+        if not any(action):  # action == [0, 0]
             self._null_action_counter += 1
 
         self._total_reward += reward
