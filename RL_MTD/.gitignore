@@ -1,6 +1,6 @@
 # include own env from gym
 !src/env/mtd_env.py
-!test/env/mtd_env.test.py
+!test/env/test_mtd_env.py
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template

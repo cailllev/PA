@@ -126,27 +126,32 @@
         "nodes": {
           "p_auth_0": 0.2,
           "dp_auth": 0.02,
+
           "p_plan_0": 0.2,
           "dp_plan": 0.02,
+
           "p_db1_0": 0.2,
           "dp_db1": 0.02,
           "p_db2_0": 0.2,
           "dp_db2": 0.02,
           "p_db3_0": 0.2,
           "dp_db3": 0.02,
+
           "p_auth_to_honey_0": 0.3,
           "dp_auth_to_honey": -0.01,
           "p_honey_to_auth_0": 0.0,
           "dp_honey_to_auth": 0.1,
+
           "p_plan_to_honey_0": 0.3,
           "dp_plan_to_honey": -0.01,
           "p_honey_to_plan_0": 0.0,
           "dp_honey_to_plan": 0.1,
+
           "p_e_0": 1,
           "dp_e": 0
         },
         "detection_systems": {
-          "p_IDS_0": 0.983,
+          "p_IDS_0": 0.9911,
           "dp_IDS": 0.5,
           "p_PS_0": 0.6,
           "dp_PS": 0.5
@@ -165,7 +170,7 @@
 
       "bias_per_step": 5
     },
-    "steps_per_simulation": 1000
+    "steps_per_simulation": 5000
   },
   "faulty_graph": {
     "nodes": {
@@ -198,11 +203,14 @@
     "detection_systems": {},
     "attacks": {
       "simple": {
-        "p10": 1,
-        "dp1": 0,
+        "nodes": {
+          "p10": 1,
+          "dp1": 0,
 
-        "p20": 1,
-        "dp2": 0
+          "p20": 1,
+          "dp2": 0
+        },
+        "detection_systems": {}
       }
     }
   }

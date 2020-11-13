@@ -70,6 +70,7 @@ class MTDEnv(gym.Env):
     # ------------------------- GYM ------------------------- #
     def reset(self):
         # type: () -> int
+        graph.reset()
         self.__init__()
         return 0
 
@@ -117,9 +118,8 @@ class MTDEnv(gym.Env):
         detection_system = self._attacker_pos.get_detection_system()
         if detection_system and not self._attacker_pos.is_honeypot():
             if val < detection_system.get_prob():
-                detection_system.caught_attacker()
                 obs = self._attacker_pos.get_progress_level()
-                self._attacker_pos = start_node
+                self._attacker_pos = detection_system.caught_attacker()
                 caught = True
                 reward += rewards["caught_attacker"]
 

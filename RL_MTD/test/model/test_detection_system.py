@@ -7,11 +7,11 @@ class DetectionSystemTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.start_node = n.Node("null", None, {}, 1, False)
-        self.node = n.Node("start", self.start_node, {}, 1, False)
+        self.start_node = n.Node("start", None, {}, 1, False)
+        self.node = n.Node("after", self.start_node, {}, 1, False)
         self.honeypot = n.Node("honeypot", self.node, {self.node: {"init": 0.4, "dt": 0.1}}, -1, True)
 
-        self.detection_system = d.DetectionSystem("IDS", {"init": 0.8, "de": 0.5}, self.start_node)
+        self.detection_system = d.DetectionSystem("IDS", {"init": 0.8, "de": 0.5}, self.start_node, ["start", "after"])
 
         self.node.set_detection_system(self.detection_system)
         self.honeypot.set_detection_system(self.detection_system)
@@ -21,6 +21,10 @@ class DetectionSystemTest(unittest.TestCase):
 
     def test_get_probs(self):
         self.assertEqual(self.detection_system.get_prob(), 0.8)
+
+    def test_caught_attacker(self):
+        reset_node = self.detection_system.caught_attacker()
+        self.assertEqual(self.start_node, reset_node)
 
     def test_reset(self):
         self.detection_system.caught_attacker()

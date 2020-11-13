@@ -41,19 +41,20 @@ class Node:
         # type: () -> dict
         return self._next
 
+    def get_probs(self):
+        # type: () -> dict
+        """
+        gets the next nodes and the probability to get into the next nodes
+        :return: {planner: 0.54, authorizer_honeypot: 0.21}
+        """
+        return {node: self._next[node]["current"] for node in self._next}
+
     def reset_probs(self, next_node):
         # type: ("Node") -> None
         """
         sets the probability to reach the next_node from the current node to init
         """
         self._next[next_node]["current"] = self._next[next_node]["init"]
-
-    def set_compromised(self, next_node):
-        # type: ("Node") -> None
-        """
-        sets the chance to get to next node to 1 (next node is compromised)
-        """
-        self._next[next_node]["current"] = 1
 
     def update_probs(self):
         # type: () -> None
@@ -63,13 +64,12 @@ class Node:
         for node in self._next:
             self._next[node]["current"] += self._next[node]["dt"]
 
-    def get_probs(self):
-        # type: () -> dict
+    def set_compromised(self, next_node):
+        # type: ("Node") -> None
         """
-        gets the next nodes and the probability to get into the next nodes
-        :return: {planner: 0.54, authorizer_honeypot: 0.21}
+        sets the chance to get to next node to 1 (next node is compromised)
         """
-        return {node: self._next[node]["current"] for node in self._next}
+        self._next[next_node]["current"] = 1
 
     def set_detection_system(self, detection_system):
         # type: (d.DetectionSystem) -> None
@@ -86,6 +86,14 @@ class Node:
     def is_honeypot(self):
         # type: () -> bool
         return self._is_honeypot
+
+    def reset(self):
+        # type: () -> None
+        """
+        resets all probs outgoing from this node
+        """
+        for next_node in self._next:
+            self.reset_probs(next_node)
 
     def __str__(self):
         """

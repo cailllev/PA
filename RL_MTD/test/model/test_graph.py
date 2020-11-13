@@ -13,7 +13,7 @@ def check_path(start, goal):
 
 
 def visit_node(current, goal):
-    if current == goal:
+    if current.get_name() == goal.get_name():
         return True
 
     next_nodes = current.get_next()

@@ -32,8 +32,8 @@ class Graph:
         detection_systems_attack_data = graph_data["attacks"][attack_name]["detection_systems"]
         detection_system_data = graph_data["detection_systems"]
 
-        self._nodes = []
-        self._detection_systems = []
+        self._nodes: List["n.Node"] = []
+        self._detection_systems: List["d.DetectionSystem"] = []
         self._min_progress_level = 1000
         self._max_progress_level = -1000
 
@@ -78,7 +78,7 @@ class Graph:
                 if pot_node.get_name() == prev_name:
                     node.set_prev(pot_node)
 
-        # set reference and probability to next nodes
+        # set reference to next nodes
         for node in self._nodes:
             next_nodes = {}
 
@@ -89,6 +89,7 @@ class Graph:
                     for pot_node in self._nodes:
                         if pot_node.get_name() == next_name:
                             next_nodes[pot_node] = next_names[next_name]
+                            break
 
             node.set_next(next_nodes)
 
@@ -204,6 +205,13 @@ class Graph:
     def get_progress_levels_count(self):
         # type: () -> int
         return self._max_progress_level - self._min_progress_level + 1
+
+    def reset(self):
+        # type: () -> None
+        for node in self._nodes:
+            node.reset()
+        for detection_system in self._detection_systems:
+            detection_system.reset()
 
     def __str__(self):
         return "Nodes: \n" + "\n".join([str(node) for node in self._nodes]) + \

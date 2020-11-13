@@ -22,13 +22,26 @@ class DetectionSystem:
         # type: () -> str
         return self._name
 
+    def get_prob(self):
+        # type: () -> float
+        return self._p
+
+    def get_init_prob(self):
+        # type: () -> float
+        return self._p0
+
     def reset_prob(self):
         # type: () -> None
         self._p = self._p0
 
     def caught_attacker(self):
-        # type: () -> None
+        # type: () -> "n.Node"
+        """
+        updates the chance of catching attacker again next step and returns the node the attacker is set to
+        :return: the new pos of the attacker
+        """
         self._p *= self._de
+        return self._reset_node
 
     def learn(self):
         # type: () -> None
@@ -37,13 +50,14 @@ class DetectionSystem:
         """
         self._p += (1.0-self._p) * self._de
 
-    def get_prob(self):
-        # type: () -> float
-        return self._p
+    def reset(self):
+        # type: () -> None
+        self.reset_prob()
 
-    def get_reset_node(self):
-        # type: () -> n.Node
-        return self._reset_node
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
 
     def __str__(self):
         return self._name \
