@@ -1,11 +1,12 @@
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3 import A2C, PPO
 
-from src.env.mtd_env import MTDEnv, get_restartable_nodes_count, get_detection_systems_count
+from src.env.mtd_env import MTDEnv
 from src.defender2000 import Defender2000
 
 from datetime import datetime
 import time
+import os
 
 # stable baselines3 agents
 # Name      Box         Discrete    MultiD.     MultiBinary Multi Processing
@@ -90,7 +91,9 @@ import time
 #       * no support from stable_baselines plus not usefull because agent cannot predict the next state most of the time
 
 
-print("Starting rl_mtd.py")
+print("Initializing...")
+# TODO add /v3_only_restart_node, /v3_only_switch_detection_system
+# TODO redo all test and learnings, bug in env where graph did not reset
 
 # ------------------------- const ------------------------- #
 rl = "RL"
@@ -106,6 +109,8 @@ timesteps = 10 ** 6
 
 simulations_count = 100
 
+simulate_only_one = False  # False -> simulate all, A2C -> simulate only A2C
+
 show_model_after_each_step = False
 show_results_after_each_sim = False
 
@@ -113,24 +118,32 @@ show_results_after_each_sim = False
 env = MTDEnv()
 
 # only to learn, Defender2000, Random and Static are added later
+# after 50 steps the agent updates it policy (it learns each 50 steps)
 algorithms = {
-    "A2C": A2C(ActorCriticPolicy, env, n_steps=simulations_count, verbose=0),
-    "PPO": PPO(ActorCriticPolicy, env, n_steps=simulations_count, verbose=0),
+    "A2C": A2C(ActorCriticPolicy, env, n_steps=50, verbose=0),
+    "PPO": PPO(ActorCriticPolicy, env, n_steps=50, verbose=0),
 }
 
 # times estimations
 base_learn_time_estimate = (timesteps / 10 ** 5) * 60
 alorithm_learn_times = {
-    "A2C": base_learn_time_estimate * 0.9,
-    "PPO": base_learn_time_estimate * 3
+    "A2C": base_learn_time_estimate * 1.4,
+    "PPO": base_learn_time_estimate * 2.5
 }
-
-sim_time_estimate = simulations_count * 1.5
-
+steps_per_sim = env.get_steps_per_simulation()
+sim_time_estimate = simulations_count * steps_per_sim / 1500
 
 parameters_folder = "parameters/v3/"
-results_file = f"{parameters_folder}results_{simulations_count}_simulations.txt"
-extensive_results_file = f"{parameters_folder}extensive_results_{simulations_count}_simulations.txt"
+if simulate_only_one:
+    results_file = "temp.txt"
+    if simulate_only_one in non_rl:
+        sim_time_estimate //= 200
+    else:
+        sim_time_estimate /= 2
+else:
+    results_file = f"{parameters_folder}results_{simulations_count}_simulations.txt"
+
+print("Initialization complete.")
 
 
 def timestamp_to_datetime(stamp):
@@ -141,7 +154,7 @@ def timestamp_to_datetime(stamp):
 # ------------------------ learning ------------------------ #
 if learn:
     print("*********************************************")
-    print(f"Learning {len(algorithms)} algorithms.")
+    print(f"Learning {', '.join(algorithms.keys())} algorithms.")
     for algorithm in algorithms:
 
         model = algorithms[algorithm]
@@ -159,7 +172,7 @@ if learn:
 
         start = time.time()
 
-        print(f"{timesteps} steps to simulate.")
+        print(f"{timesteps} steps to learn, with updates to policy each {model.n_steps} steps.")
         print(f"Start:              {timestamp_to_datetime(start)}.")
         print(f"Estimated finish:   {timestamp_to_datetime(start+alorithm_learn_times[algorithm])}.")
         print("...")
@@ -175,9 +188,13 @@ best_avg_reward = [0, random]
 
 # add non rl algorithms (random, defender2000 and static) for evaluation
 algorithms[random] = random
-algorithms[defender2000] = Defender2000(get_restartable_nodes_count(), get_detection_systems_count())
+algorithms[defender2000] = Defender2000()
 algorithms[static] = static
 
+if simulate_only_one:
+    val = algorithms[simulate_only_one]
+    algorithms.clear()
+    algorithms[simulate_only_one] = val
 
 start = time.time()
 print("*********************************************")
@@ -280,15 +297,15 @@ f = open(results_file, "w")
 f.write("*********************************************************************\n")
 f.write(f"Starting Simulation Types: {', '.join(algorithms.keys())}\n")
 f.write(f"Simulations per Type:      {simulations_count}\n")
-f.write(f"Steps per Simulation:      {env.get_steps_per_simulation()}\n")
+f.write(f"Steps per Simulation:      {steps_per_sim}\n")
 
 for algorithm in algorithms:
     if algorithm not in non_rl:
         algo_type = rl
         try:
             model = algorithms[algorithm]
-            model.load(parameters_folder + algorithm)
-        except ValueError:
+            model = model.load(parameters_folder + algorithm)
+        except FileNotFoundError:
             f.write(f"Algorithm not yet trained: {algorithm}\n")
             continue
     else:
@@ -298,14 +315,18 @@ for algorithm in algorithms:
     # init or clear results
     results = {
         "null_action_ratio": 0,
-        "min_steps": env.get_steps_per_simulation(),
+        "min_steps": steps_per_sim,
         "max_steps": 0,
         "defender_wins": 0,
         "steps": [],
         "total_reward": []
     }
 
-    for _ in range(simulations_count):
+    print(f"Start simulating {algorithm}.")
+    for i in range(simulations_count):
+        if i % 20 == 0 and algorithm not in non_rl:
+            print(f"  {i} simulations done.")
+
         # run 1 simulation (until attacker or defender wins)
         run_simulation(algo_type, model)
 
@@ -325,3 +346,6 @@ f = open(results_file, "r")
 s = "".join(f.readlines())
 print(s)
 f.close()
+
+if simulate_only_one:
+    os.remove(results_file)

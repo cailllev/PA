@@ -1,18 +1,19 @@
 import random
-
 from typing import List
+
+from src.env.mtd_env import get_restartable_nodes_count, get_detection_systems_count
 
 
 class Defender2000:
-    def __init__(self, nodes_count, detection_systems_count):
-        # type: (int, int) -> None
+    def __init__(self):
+        # type: () -> None
         self._next_actions = []
 
-        self._random_restart_threshold = 0.95
-        self._random_switch_threshold = 0.8
+        self._random_restart_threshold = 0.4
+        self._random_switch_threshold = 0.2
 
-        self._nodes_count = nodes_count
-        self._detection_systems_count = detection_systems_count
+        self._nodes_count = get_restartable_nodes_count()
+        self._detection_systems_count = get_detection_systems_count()
 
     def _clear_next_actions(self):
         # type: () -> None
@@ -59,6 +60,7 @@ class Defender2000:
         # type: (int) -> List[int]
         """
         set next actions when obs > 0 --> attacker was caught, else pick random
+        when attacker is caught from internet to first node, don't switch
         :param obs:
         :return:
         """
