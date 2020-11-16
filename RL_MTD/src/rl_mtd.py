@@ -1,12 +1,15 @@
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3 import A2C, PPO
 
-from src.env.mtd_env import MTDEnv
+from src.env.mtd_env import MTDEnv,  subtract_one, create_locked_lists
 from src.defender2000 import Defender2000
 
 from datetime import datetime
+from sys import stdout
+from random import choice
 import time
 import os
+import math
 
 # stable baselines3 agents
 # Name      Box         Discrete    MultiD.     MultiBinary Multi Processing
@@ -49,8 +52,10 @@ import os
 #           HER     Hindsight Experience Replay (BaseRLModel)
 #                       ------------------------------------------------------------------------------------------------
 #                       Too many challanges to implement HER, unfixable with current setup. Initial list of requirements
-#                           - cannot use normal env, needs VecEnv (but not DummyVecEnv, doesnt work)
+#                           - cannot use normal env, needs VecEnv (but not DummyVecEnv, doesnt work), so we are left
+#                               with SubProcEnv or own VecEnv implementation
 #                           - cannot create env in SubProcEnv, multiprocessing exception
+#                           - own VecEnv implementation not reasonable
 #                           - cannot use MultiDiscrete
 #                       ------------------------------------------------------------------------------------------------
 #                       In Hindsight Experience Replay method, basically a DQN is suplied with a state and a desired
@@ -91,261 +96,350 @@ import os
 #       * no support from stable_baselines plus not usefull because agent cannot predict the next state most of the time
 
 
-print("Initializing...")
-# TODO add /v3_only_restart_node, /v3_only_switch_detection_system
-# TODO redo all test and learnings, bug in env where graph did not reset
+def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, simulate_only_one=False,
+         only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
+    # type: (str, bool, int, int, bool, bool, bool, int, int) -> None
+    """
+    simulates (and trains) rl agents and own agents (defender2000, random and static) on MTDEnv and writes the results 
+    and trained parameters to {{parameters_folder}}
+    :param parameters_folder: where the parameters are saved to and loaded from
+    :param learn: skip learning?
+    :param timesteps: steps for learning
+    :param simulations_count: how many indiviual simulations per algoritm
+    :param simulate_only_one: False or None -> simulate all; A2C -> simulate only A2C and write results to temp file
+    :param only_nodes: only able to restart nodes, detection systems are fixed
+    :param only_detection_systems: only able to switch detection systems, nodes are fixed
+    :param nodes_pause: pause between same node restarts (1=every step possible)
+    :param detection_systems_pause: pause between same detection system switches (1=every step possible)
+    """
 
-# ------------------------- const ------------------------- #
-rl = "RL"
-random = "Random"
-defender2000 = "Defender2000"
-static = "Static"
+    print("\nConfig:")
+    print(f"Only Nodes:                {only_nodes}")
+    print(f"Only Detection Systems:    {only_detection_systems}")
+    print(f"Nodes Pause:               {nodes_pause}")
+    print(f"Detection Systems Pause:   {detection_systems_pause}")
 
-non_rl = [random, defender2000, static]
+    # ------------------------- const ------------------------- #
+    timesteps_exponent = round(math.log10(timesteps))
+    parameters_folder += f"1e{timesteps_exponent}_training/"
 
-# ------------------------- config ------------------------- #
-learn = False
-timesteps = 10 ** 6
+    rl = "RL"
+    random = "Random"
+    defender2000 = "Defender2000"
+    static = "Static"
 
-simulations_count = 100
+    non_rl = [random, defender2000, static]
 
-simulate_only_one = False  # False -> simulate all, A2C -> simulate only A2C
+    # ------------------------- debug ------------------------- #
+    show_model_after_each_step = False
+    show_results_after_each_sim = False
 
-show_model_after_each_step = False
-show_results_after_each_sim = False
+    # ------------------------- init ------------------------- #
+    if not os.path.isdir(parameters_folder):
+        os.mkdir(parameters_folder)
 
-# ------------------------- init ------------------------- #
-env = MTDEnv()
+    env = MTDEnv(only_nodes, only_detection_systems, nodes_pause, detection_systems_pause)
 
-# only to learn, Defender2000, Random and Static are added later
-# after 50 steps the agent updates it policy (it learns each 50 steps)
-algorithms = {
-    "A2C": A2C(ActorCriticPolicy, env, n_steps=50, verbose=0),
-    "PPO": PPO(ActorCriticPolicy, env, n_steps=50, verbose=0),
-}
-
-# times estimations
-base_learn_time_estimate = (timesteps / 10 ** 5) * 60
-alorithm_learn_times = {
-    "A2C": base_learn_time_estimate * 1.4,
-    "PPO": base_learn_time_estimate * 2.5
-}
-steps_per_sim = env.get_steps_per_simulation()
-sim_time_estimate = simulations_count * steps_per_sim / 1500
-
-parameters_folder = "parameters/v3/"
-if simulate_only_one:
-    results_file = "temp.txt"
-    if simulate_only_one in non_rl:
-        sim_time_estimate //= 200
-    else:
-        sim_time_estimate /= 2
-else:
-    results_file = f"{parameters_folder}results_{simulations_count}_simulations.txt"
-
-print("Initialization complete.")
-
-
-def timestamp_to_datetime(stamp):
-    # type: (float) -> str
-    return datetime.fromtimestamp(stamp).strftime('%I:%M:%S')
-
-
-# ------------------------ learning ------------------------ #
-if learn:
-    print("*********************************************")
-    print(f"Learning {', '.join(algorithms.keys())} algorithms.")
-    for algorithm in algorithms:
-
-        model = algorithms[algorithm]
-        env.reset()
-
-        print("*********************************************")
-        print(f"Learning {algorithm}.")
-
-        try:
-            model.load(parameters_folder + algorithm)
-            print(f"Found parameters.")
-
-        except FileNotFoundError:
-            print(f"No learned parameters found, start from scratch.")
-
-        start = time.time()
-
-        print(f"{timesteps} steps to learn, with updates to policy each {model.n_steps} steps.")
-        print(f"Start:              {timestamp_to_datetime(start)}.")
-        print(f"Estimated finish:   {timestamp_to_datetime(start+alorithm_learn_times[algorithm])}.")
-        print("...")
-
-        model.learn(total_timesteps=timesteps)
-        model.save(parameters_folder + algorithm)
-
-        print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
-
-# ------------------------ simulation helpers ------------------------ #
-best_avg_steps = [0, random]
-best_avg_reward = [0, random]
-
-# add non rl algorithms (random, defender2000 and static) for evaluation
-algorithms[random] = random
-algorithms[defender2000] = Defender2000()
-algorithms[static] = static
-
-if simulate_only_one:
-    val = algorithms[simulate_only_one]
-    algorithms.clear()
-    algorithms[simulate_only_one] = val
-
-start = time.time()
-print("*********************************************")
-print(f"Prepared to simulate {', '.join(algorithms.keys())} with {simulations_count} simulations.")
-print(f"Start:              {timestamp_to_datetime(start)}.")
-print(f"Estimated finish:   {timestamp_to_datetime(start+sim_time_estimate)}.")
-print("...")
-
-
-def run_simulation(algorithm_type, m):
-    obs = env.reset()
-    done = False
-    null_action = [0, 0]
-
-    while not done:
-        if algorithm_type is rl:
-            action, _ = m.predict(obs)
-
-        elif algorithm_type is defender2000:
-            action = m.predict(obs)
-
-        elif algorithm_type is random:
-            action = env.action_space.sample()
-
-        elif algorithm_type is static:
-            action = null_action
-
-        else:
-            print(f"Unknown algorithm type: {algorithm_type}")
-            action = null_action
-
-        # do action on model
-        obs, rewards, done, info = env.step(action)
-        if show_model_after_each_step:
-            env.render()
-
-
-def update_results():
-    global results
-    results["steps"].append(env.get_counter())
-    results["total_reward"].append(env.get_total_reward())
-    results["null_action_ratio"] += env.get_null_action_ratio()
-
-    if env.defender_wins():
-        results["defender_wins"] += 1
-
-    if env.get_counter() < results["min_steps"]:
-        results["min_steps"] = env.get_counter()
-
-    if env.get_counter() > results["max_steps"]:
-        results["max_steps"] = env.get_counter()
-
-    if show_results_after_each_sim:
-        print("\n" + str(env))
-
-
-def evaluate_and_save_results(algo_name):
-    global results
-    global best_avg_steps
-    global best_avg_reward
-
-    steps = results["steps"]
-    rewards = results["total_reward"]
-
-    sum_steps = sum(steps)
-    sum_rewards = sum(rewards)
-
-    avg_steps = round(sum_steps / simulations_count, 3)
-    avg_reward = round(sum_rewards / sum_steps, 3)
-    avg_null_action_ratio = round(results["null_action_ratio"] / simulations_count, 3)
-
-    if avg_steps > best_avg_steps[0]:
-        best_avg_steps = [avg_steps, algo_name]
-
-    if avg_reward > best_avg_reward[0]:
-        best_avg_reward = [avg_reward, algo_name]
-
-    min_steps = results["min_steps"]
-    max_steps = results["max_steps"]
-
-    defender_wins = results['defender_wins']
-    attacker_wins = simulations_count - defender_wins
-
-    f.write("*********************************************************************\n")
-    f.write(f"Simulation Type:          {algo_name}\n")
-    f.write(f"--------------------------------------------------------------------\n")
-    f.write(f"Avg steps:                {avg_steps}\n")
-    f.write(f"Avg reward/step:          {avg_reward}\n")
-    f.write(f"Avg null action ratio:    {avg_null_action_ratio}\n\n")
-    f.write(f"Min steps:                {min_steps}\n")
-    f.write(f"Max steps:                {max_steps}\n\n")
-    f.write(f"Defender wins:            {defender_wins}\n")
-    f.write(f"Attacker wins:            {attacker_wins}\n\n")
-    f.write(f"Steps each sim:           {steps}\n")
-    f.write(f"Reward each sim:          {rewards}\n")
-
-
-# ------------------------ actual simulation ------------------------ #
-f = open(results_file, "w")
-f.write("*********************************************************************\n")
-f.write(f"Starting Simulation Types: {', '.join(algorithms.keys())}\n")
-f.write(f"Simulations per Type:      {simulations_count}\n")
-f.write(f"Steps per Simulation:      {steps_per_sim}\n")
-
-for algorithm in algorithms:
-    if algorithm not in non_rl:
-        algo_type = rl
-        try:
-            model = algorithms[algorithm]
-            model = model.load(parameters_folder + algorithm)
-        except FileNotFoundError:
-            f.write(f"Algorithm not yet trained: {algorithm}\n")
-            continue
-    else:
-        algo_type = algorithm
-        model = algorithms[algorithm]
-
-    # init or clear results
-    results = {
-        "null_action_ratio": 0,
-        "min_steps": steps_per_sim,
-        "max_steps": 0,
-        "defender_wins": 0,
-        "steps": [],
-        "total_reward": []
+    # only to learn; Defender2000, Random and Static are added later
+    # after 50 steps the agent updates it policy (it learns each 50 steps)
+    algorithms = {
+        "A2C": A2C(ActorCriticPolicy, env, n_steps=50, verbose=0),
+        "PPO": PPO(ActorCriticPolicy, env, n_steps=50, verbose=0),
     }
 
-    print(f"Start simulating {algorithm}.")
-    for i in range(simulations_count):
-        if i % 20 == 0 and algorithm not in non_rl:
-            print(f"  {i} simulations done.")
+    # times estimations
+    base_learn_time_estimate = (timesteps / 10 ** 5) * 60
+    alorithm_learn_times = {
+        "A2C": base_learn_time_estimate * 1.1,
+        "PPO": base_learn_time_estimate * 2.3
+    }
+    steps_per_sim = env.get_steps_per_simulation()
+    sim_time_estimate = simulations_count * steps_per_sim / 900
+    if simulate_only_one:
+        results_file = "temp.txt"
+        if simulate_only_one in non_rl:
+            sim_time_estimate //= 200
+        else:
+            sim_time_estimate /= 2
+    else:
+        results_file = f"{parameters_folder}results_{simulations_count}_simulations.txt"
 
-        # run 1 simulation (until attacker or defender wins)
-        run_simulation(algo_type, model)
+    def timestamp_to_datetime(stamp):
+        # type: (float) -> str
+        return datetime.fromtimestamp(stamp).strftime('%I:%M:%S')
 
-        update_results()
+    # ------------------------ learning ------------------------ #
+    if learn:
+        print("*********************************************")
+        print(f"Learning {', '.join(algorithms.keys())} algorithms.")
+        for algorithm in algorithms:
 
-    evaluate_and_save_results(algorithm)
+            model = algorithms[algorithm]
+            env.reset()
 
-print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
+            print("*********************************************")
+            print(f"Learning {algorithm}.")
 
-f.write("*********************************************************************\n")
-f.write(f"{best_avg_steps[1]} is the most effective algorithm with {best_avg_steps[0]} avg steps.\n")
-f.write(f"{best_avg_reward[1]} is the most efficient algorithm with {best_avg_reward[0]} avg reward/step.\n")
-f.close()
+            try:
+                model.load(parameters_folder + algorithm)
+                print(f"Found parameters.")
+
+            except FileNotFoundError:
+                print(f"No learned parameters found, start from scratch.")
+
+            start = time.time()
+
+            print(f"{timesteps} steps to learn, with updates to policy each {model.n_steps} steps.")
+            print(f"Start:              {timestamp_to_datetime(start)}.")
+            print(f"Estimated finish:   {timestamp_to_datetime(start+alorithm_learn_times[algorithm])}.")
+            print("...")
+
+            model.learn(total_timesteps=timesteps)
+            model.save(parameters_folder + algorithm)
+
+            print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
+
+    # ------------------------ simulation helpers ------------------------ #
+    best_avg_steps = [0, random]
+    best_avg_reward = [-1000, random]
+
+    # add non rl algorithms (random, defender2000 and static) for evaluation
+    algorithms[random] = random
+    algorithms[defender2000] = Defender2000(only_nodes, only_detection_systems, nodes_pause, detection_systems_pause)
+    algorithms[static] = static
+
+    if simulate_only_one:
+        val = algorithms[simulate_only_one]
+        algorithms.clear()
+        algorithms[simulate_only_one] = val
+
+    start = time.time()
+    print("*********************************************")
+    print(f"Prepared to simulate {', '.join(algorithms.keys())} with {simulations_count} simulations.")
+    print(f"Start:              {timestamp_to_datetime(start)}.")
+    print(f"Estimated finish:   {timestamp_to_datetime(start+sim_time_estimate)}.")
+    print("...")
+
+    def run_rl_simulation(m):
+        obs = env.reset()
+        done = False
+
+        while not done:
+            action, _ = m.predict(obs)
+
+            # do action on model
+            obs, rewards, done, info = env.step(action)
+            if show_model_after_each_step:
+                env.render()
+
+    def run_defender_2000_simulation(m):
+        obs = env.reset()
+        done = False
+
+        while not done:
+            action = m.predict(obs)
+
+            # do action on model
+            obs, rewards, done, info = env.step(action)
+            if show_model_after_each_step:
+                env.render()
+
+    def run_random_simulation():
+        env.reset()
+        done = False
+        locked_nodes, locked_detection_systems = create_locked_lists()
+
+        while not done:
+            subtract_one(locked_nodes)
+            subtract_one(locked_detection_systems)
+
+            # create new action until value in locked list is 0 and 0, i.e. no pause
+            action = [0, 0]
+
+            valid_node_action_count = locked_nodes.count(0)
+            index = choice(range(valid_node_action_count))
+            for j in range(len(locked_nodes)):
+                if index == 0:
+                    action[0] = j
+                    break
+
+                if locked_nodes[j] == 0:
+                    index -= 1
+
+            valid_ds_action_count = locked_detection_systems.count(0)
+            index = choice(range(valid_ds_action_count))
+            for j in range(len(locked_detection_systems)):
+                if index == 0:
+                    action[1] = j
+                    break
+
+                if locked_nodes[j] == 0:
+                    index -= 1
+
+            # cannot lock null action
+            if action[0]:
+                locked_nodes[action[0]] = nodes_pause
+            if action[1]:
+                locked_detection_systems[action[1]] = detection_systems_pause
+
+            # do action on model
+            obs, rewards, done, info = env.step(action)
+            if show_model_after_each_step:
+                env.render()
+
+    def run_static_simulation():
+        env.reset()
+        done = False
+        null_action = [0, 0]
+
+        while not done:
+            # do action on model
+            obs, rewards, done, info = env.step(null_action)
+            if show_model_after_each_step:
+                env.render()
+
+    def update_results():
+        nonlocal results
+        results["steps"].append(env.get_counter())
+        results["total_reward"].append(env.get_total_reward())
+
+        null_actions_count = env.get_null_actions_count()
+        results["null_actions_count"][0] += null_actions_count[0]
+        results["null_actions_count"][1] += null_actions_count[1]
+
+        if env.defender_wins():
+            results["defender_wins"] += 1
+
+        if env.get_counter() < results["min_steps"]:
+            results["min_steps"] = env.get_counter()
+
+        if env.get_counter() > results["max_steps"]:
+            results["max_steps"] = env.get_counter()
+
+        if show_results_after_each_sim:
+            print("\n" + str(env))
+
+    def evaluate_and_save_results(algo_name):
+        nonlocal results
+        nonlocal best_avg_steps
+        nonlocal best_avg_reward
+
+        steps = results["steps"]
+        rewards = results["total_reward"]
+
+        sum_steps = sum(steps)
+        sum_rewards = sum(rewards)
+
+        avg_steps = round(sum_steps / simulations_count, 3)
+        avg_reward = round(sum_rewards / sum_steps, 3)
+
+        avg_null_action_ratio = [0, 0]
+        avg_null_action_ratio[0] = round(results["null_actions_count"][0] / sum_steps, 3)
+        avg_null_action_ratio[1] = round(results["null_actions_count"][1] / sum_steps, 3)
+
+        if avg_steps > best_avg_steps[0]:
+            best_avg_steps = [avg_steps, algo_name]
+
+        if avg_reward > best_avg_reward[0]:
+            best_avg_reward = [avg_reward, algo_name]
+
+        min_steps = results["min_steps"]
+        max_steps = results["max_steps"]
+
+        defender_wins = results['defender_wins']
+        attacker_wins = simulations_count - defender_wins
+
+        f.write("*********************************************************************\n")
+        f.write(f"Simulation Type:          {algo_name}\n")
+        f.write(f"--------------------------------------------------------------------\n")
+        f.write(f"Avg steps:                {avg_steps}\n")
+        f.write(f"Avg reward/step:          {avg_reward}\n")
+        f.write(f"Avg null action ratio:    {avg_null_action_ratio}\n\n")
+        f.write(f"Min steps:                {min_steps}\n")
+        f.write(f"Max steps:                {max_steps}\n\n")
+        f.write(f"Defender wins:            {defender_wins}\n")
+        f.write(f"Attacker wins:            {attacker_wins}\n\n")
+        f.write(f"Steps each sim:           {steps}\n")
+        f.write(f"Reward each sim:          {rewards}\n")
+
+    # ------------------------ actual simulation ------------------------ #
+    f = open(results_file, "w")
+    f.write("*********************************************************************\n")
+    f.write(f"Starting Simulation Types: {', '.join(algorithms.keys())}\n")
+    f.write(f"Simulations per Type:      {simulations_count}\n")
+    f.write(f"Steps per Simulation:      {steps_per_sim}\n")
+    f.write("---------------------------------------------------------------------\n")
+    f.write(f"Only Nodes:                {only_nodes}\n")
+    f.write(f"Only Detection Systems:    {only_detection_systems}\n")
+    f.write(f"Nodes Pause:               {nodes_pause}\n")
+    f.write(f"Detection Systems Pause:   {detection_systems_pause}\n")
+
+    for algorithm in algorithms:
+        if algorithm not in non_rl:
+            algo_type = rl
+            try:
+                model = algorithms[algorithm]
+                model = model.load(parameters_folder + algorithm)
+            except FileNotFoundError:
+                f.write(f"Algorithm not yet trained: {algorithm}\n")
+                continue
+        else:
+            algo_type = algorithm
+            model = algorithms[algorithm]
+
+        # init or clear results
+        results = {
+            "null_actions_count": [0, 0],
+            "min_steps": steps_per_sim,
+            "max_steps": 0,
+            "defender_wins": 0,
+            "steps": [],
+            "total_reward": []
+        }
+
+        print(f"Start simulating {algorithm}.")
+        for i in range(simulations_count):
+            # run 1 complete simulation (until attacker or defender wins)
+            if algo_type is rl:
+                run_rl_simulation(model)
+
+            elif algo_type is defender2000:
+                run_defender_2000_simulation(model)
+
+            elif algo_type is random:
+                run_random_simulation()
+
+            elif algo_type is static:
+                run_static_simulation()
+
+            else:
+                raise Exception(f"Unknown algorithm type: {algo_type}.")
+
+            update_results()
+            stdout.write("\r%d simulations done." % i+1)
+            stdout.flush()
+
+        evaluate_and_save_results(algorithm)
+        stdout.write("\n")
+        stdout.flush()
+
+    print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
+
+    f.write("*********************************************************************\n")
+    f.write(f"{best_avg_steps[1]} is the most effective algorithm with {best_avg_steps[0]} avg steps.\n")
+    f.write(f"{best_avg_reward[1]} is the most efficient algorithm with {best_avg_reward[0]} avg reward/step.\n")
+    f.close()
+
+    print("Actual file contents:\n")
+    f = open(results_file, "r")
+    s = "".join(f.readlines())
+    print(s)
+    f.close()
+
+    if simulate_only_one:
+        os.remove(results_file)
 
 
-f = open(results_file, "r")
-s = "".join(f.readlines())
-print(s)
-f.close()
-
-if simulate_only_one:
-    os.remove(results_file)
+if __name__ == "__main__":
+    main("parameters/tests/", learn=True, timesteps=10**5, simulations_count=100, nodes_pause=10,
+         detection_systems_pause=4)

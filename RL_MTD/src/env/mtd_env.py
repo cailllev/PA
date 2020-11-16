@@ -1,7 +1,6 @@
 import json
 import gym
 import random
-from collections import deque
 
 import src.model.graph as g
 
@@ -32,6 +31,17 @@ def get_detection_systems_count():
     return len(detection_systems)
 
 
+def subtract_one(lst):
+    # type: (list) -> list
+    for i in range(len(lst)):
+        lst[i] = max(lst[i] - 1, 0)
+
+
+def create_locked_lists():
+    # type: () -> List[list, list]
+    return [[0] * (get_restartable_nodes_count() + 1), [0] * (get_detection_systems_count() + 1)]
+
+
 # ------------- MODEL ------------- #
 graph_name = "simple_webservice"
 graph = g.Graph(graph_name, "simple")
@@ -43,12 +53,19 @@ end_node = nodes[-1]
 
 # -------------- GYM -------------- #
 rewards, steps_per_simulation = load_config(graph_name)
-bias_per_step = rewards["bias_per_step"]
 
 
 class MTDEnv(gym.Env):
-    def __init__(self):
-        # type: () -> None
+    # TODO verify logic
+    def __init__(self, only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
+        # type: (bool, bool, int, int) -> None
+        """
+        own enviroment to simulate behavior of a MTD network
+        :param only_nodes: only able to restart nodes, detection systems are fixed
+        :param only_detection_systems: only able to switch detection systems, nodes are fixed
+        :param nodes_pause: pause between same node restarts (1=every step possible)
+        :param detection_systems_pause: pause between same detection system switches (1=every step possible)
+        """
         self._attacker_pos = start_node
 
         self._counter = 0
@@ -58,14 +75,27 @@ class MTDEnv(gym.Env):
         self._last_action = None
         self._last_reward = 0
 
-        self._progress_history = deque()
-        self._null_action_counter = 0
+        self._restart_null_action_counter = 0
+        self._switch_null_action_counter = 0
         self._total_reward = 0
 
         # stable baselines
-        self.action_space = gym.spaces.MultiDiscrete([get_restartable_nodes_count() + 1,
-                                                      get_detection_systems_count() + 1])
-        self.observation_space = gym.spaces.Discrete(graph.get_progress_levels_count())
+        if only_nodes:
+            detection_systems_actions = 1
+        else:
+            detection_systems_actions = get_detection_systems_count() + 1
+
+        if only_detection_systems:
+            nodes_actions = 1
+        else:
+            nodes_actions = get_restartable_nodes_count() + 1
+
+        self.action_space = gym.spaces.MultiDiscrete([nodes_actions, detection_systems_actions])
+        self.observation_space = gym.spaces.Discrete(graph.get_obs_range())
+
+        self._locked_nodes, self._locked_detection_systems = create_locked_lists()
+        self._nodes_pause = nodes_pause
+        self._detection_systems_pause = detection_systems_pause
 
     # ------------------------- GYM ------------------------- #
     def reset(self):
@@ -87,27 +117,44 @@ class MTDEnv(gym.Env):
         :param action: the action from the RL agent, what to restart and what to switch
         :return: obs, reward, done, info
         """
-        obs = 0  # progress of attacker before step simulation (0=unknown)
-        reward = bias_per_step
+        obs = 0  # index of attacker pos before step simulation (0=unknown)
+        reward = 0
         done = False
 
         self._counter += 1
         self._last_action = action
 
+        subtract_one(self._locked_nodes)
+        subtract_one(self._locked_detection_systems)
+
         # --------------- eval action --------------- #
         restart_node = action[0]
         switch_detection_system = action[1]
 
+        # https://github.com/hill-a/stable-baselines/issues/108
+        if self._locked_nodes[restart_node] > 0:
+            reward += rewards["invalid_action"]
+        if self._locked_detection_systems[switch_detection_system] > 0:
+            reward += rewards["invalid_action"]
+
         if restart_node:
+            self._locked_nodes[restart_node] = self._nodes_pause
+
             node = nodes[restart_node]
             node.get_prev().reset_probs(node)
             reward += rewards["restart_node"]
             if self._attacker_pos == node:
                 self._attacker_pos = self._attacker_pos.get_prev()
+        else:
+            self._restart_null_action_counter += 1
 
         if switch_detection_system:
+            self._locked_detection_systems[switch_detection_system] = self._detection_systems_pause
+
             detection_systems[switch_detection_system-1].reset_prob()
             reward += rewards["switch_detection_system"]
+        else:
+            self._switch_null_action_counter += 1
 
         # ---------------- simulate ---------------- #
         val = random.random()
@@ -118,17 +165,14 @@ class MTDEnv(gym.Env):
         detection_system = self._attacker_pos.get_detection_system()
         if detection_system and not self._attacker_pos.is_honeypot():
             if val < detection_system.get_prob():
-                obs = self._attacker_pos.get_progress_level()
+                obs = self._attacker_pos.get_index()
                 self._attacker_pos = detection_system.caught_attacker()
                 caught = True
-                reward += rewards["caught_attacker"]
 
         # Attacker is in honeypot -> Detection System gets better
-        # & remove progression penalty from reward (gets added back later)
         if self._attacker_pos.is_honeypot():
             self._attacker_pos.get_detection_system().learn()
-            obs = self._attacker_pos.get_progress_level()
-            reward -= self._attacker_pos.get_progress_level() * rewards["progression"]
+            obs = self._attacker_pos.get_index()
 
         # Attacker getting into next node, only possible if not caught
         if not caught:
@@ -142,7 +186,8 @@ class MTDEnv(gym.Env):
                     break
 
         # ---------------- finalize ---------------- #
-        reward += self._attacker_pos.get_progress_level() * rewards["progression"]
+        if not self._attacker_pos.is_honeypot():
+            reward += self._attacker_pos.get_progress_level() * rewards["progression"]
 
         if self._attacker_pos == start_node:
             self._last_time_on_start = self._counter
@@ -153,12 +198,6 @@ class MTDEnv(gym.Env):
 
         if self.defender_wins():
             done = True
-            reward += rewards["defender_wins"]
-
-        self._progress_history.append(self._attacker_pos.get_progress_level())
-
-        if not any(action):  # action == [0, 0]
-            self._null_action_counter += 1
 
         self._total_reward += reward
         self._last_reward = reward
@@ -200,10 +239,6 @@ class MTDEnv(gym.Env):
         # type: () -> bool
         return self._counter >= self._steps_per_simulation and not self.attacker_wins()
 
-    def get_progress_history(self):
-        # type: () -> List[int]
-        return list(self._progress_history)
-
     def get_counter(self):
         # type: () -> int
         return self._counter
@@ -216,9 +251,9 @@ class MTDEnv(gym.Env):
         # type: () -> int
         return self._total_reward
 
-    def get_null_action_ratio(self):
-        # type: () -> float
-        return self._null_action_counter / self._counter
+    def get_null_actions_count(self):
+        # type: () -> List[float]
+        return self._restart_null_action_counter, self._switch_null_action_counter
 
     def __str__(self):
         # type: () -> str

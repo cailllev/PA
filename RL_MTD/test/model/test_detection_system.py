@@ -7,9 +7,9 @@ class DetectionSystemTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.start_node = n.Node("start", None, {}, 1, False)
-        self.node = n.Node("after", self.start_node, {}, 1, False)
-        self.honeypot = n.Node("honeypot", self.node, {self.node: {"init": 0.4, "dt": 0.1}}, -1, True)
+        self.start_node = n.Node("start", 0, None, {}, 1, False)
+        self.node = n.Node("after", 1, self.start_node, {}, 1, False)
+        self.honeypot = n.Node("honeypot", 2, self.node, {self.node: {"init": 0.4, "dt": 0.1}}, -1, True)
 
         self.detection_system = d.DetectionSystem("IDS", {"init": 0.8, "de": 0.5}, self.start_node, ["start", "after"])
 

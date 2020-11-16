@@ -5,16 +5,18 @@ from typing import Dict
 
 
 class Node:
-    def __init__(self, name, prev_node, next_nodes, progress, is_honeypot):
-        # type: (str, Union["Node", None], dict, int, bool) -> None
+    def __init__(self, name, index, prev_node, next_nodes, progress, is_honeypot):
+        # type: (str, int, Union["Node", None], dict, int, bool) -> None
         """
         :param name: name of the node
+        :param index: the index (identifier) of the node in the graph
         :param prev_node: the previous node (in case of this.reset)
         :param next_nodes: the next nodes (and the prob to get to them)
         :param progress: the relative progress of the attack (when the attacker is at this node)
         :param is_honeypot: if this node is a honeypot
         """
         self._name = name
+        self._index = index
         self._prev = prev_node
         self._next = next_nodes
         self._detection_system = None
@@ -24,6 +26,10 @@ class Node:
     def get_name(self):
         # type: () -> str
         return self._name
+
+    def get_index(self):
+        # type: () -> int
+        return self._index
 
     def set_prev(self, node):
         # type: ("Node") -> None

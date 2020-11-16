@@ -34,8 +34,6 @@ class Graph:
 
         self._nodes: List["n.Node"] = []
         self._detection_systems: List["d.DetectionSystem"] = []
-        self._min_progress_level = 1000
-        self._max_progress_level = -1000
 
         self._init_nodes(nodes_data)
         self._init_node_probs(nodes_attack_data)
@@ -49,27 +47,17 @@ class Graph:
         """
 
         # init nodes, init prev and next links as stings
+        index = 0
         for node in nodes_data:
             self._nodes.append(n.Node(
                 node,
+                index,
                 nodes_data[node]["previous"],
                 nodes_data[node]["next"],
                 nodes_data[node]["progress"],
                 True if node.__contains__("honeypot") else False
             ))
-
-        # get min / max progression
-        for node in self._nodes:
-            progress_level = node.get_progress_level()
-
-            if progress_level < self._min_progress_level:
-                self._min_progress_level = progress_level
-
-            if progress_level > self._max_progress_level:
-                self._max_progress_level = progress_level
-
-        assert self._min_progress_level != 1000, "Error, min progress not found!"
-        assert self._max_progress_level != -1000, "Error, max progress not found!"
+            index += 1
 
         # set reference to previous node
         for node in self._nodes:
@@ -202,9 +190,9 @@ class Graph:
         # type: () -> List["d.DetectionSystem"]
         return self._detection_systems
 
-    def get_progress_levels_count(self):
+    def get_obs_range(self):
         # type: () -> int
-        return self._max_progress_level - self._min_progress_level + 1
+        return len(self._nodes) + 1
 
     def reset(self):
         # type: () -> None
