@@ -33,7 +33,7 @@
             "dt": "dp_honey_to_auth"
           }
         },
-        "progress": 1
+        "progress": -1
       },
       "planner": {
         "previous": "authorizer",
@@ -65,7 +65,7 @@
             "dt": "dp_honey_to_plan"
           }
         },
-        "progress": 2
+        "progress": -1
       },
       "DB1": {
         "previous": "planner",
@@ -161,14 +161,9 @@
     "rewards": {
       "switch_detection_system": -2,
       "restart_node": -5,
-      "progression": -20,
-      "attacker_wins": -40,
-
-      "in_honeypot": 10,
-      "caught_attacker": 5,
-      "defender_wins": 100,
-
-      "bias_per_step": 5
+      "progression": -50,
+      "attacker_wins": -100,
+      "invalid_action": -10000
     },
     "steps_per_simulation": 5000
   },

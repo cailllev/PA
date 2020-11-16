@@ -48,16 +48,12 @@ rewards
 - refactored action space from multidiscrete to discrete (still same functionality) to add RL method DQN
   - refactored back after seeing DQN performs very bad
 - remove bug in mtd_env, reset env did not reset graph -> fixed
+- remove unnecessary rewards
 ```
-rewards
+"rewards": 
   "switch_detection_system": -2,
   "restart_node": -5,
-  "progression": -20,
-  "attacker_wins": -40,
-
-  "in_honeypot": 10  # to compensate for removing "progression: -1" of honeypot
-  "caught_attacker": 5
-  "defender_wins": 100
-
-  "bias_per_step": 5
+  "progression": -50,
+  "attacker_wins": -100,
+  "invalid_action": -10000
 ```
