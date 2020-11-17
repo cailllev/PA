@@ -1,12 +1,11 @@
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3 import A2C, PPO
 
-from src.env.mtd_env import MTDEnv,  subtract_one, create_locked_lists
+from src.env.mtd_env import MTDEnv, subtract_one, create_locked_lists, choose_random_from_list
 from src.defender2000 import Defender2000
 
 from datetime import datetime
 from sys import stdout
-from random import choice
 import time
 import os
 import math
@@ -42,7 +41,8 @@ import math
 #       Q-Learning
 #           DQN     Deep Q Neural Network (OffPolicyRLModel)
 #                       ------------------------------------------------------------------------------------------------
-#                       Too much overhead to implement DQN, plus DQN is even worse than Defender2000 after initial tests
+#                       Too much overhead to correctly and reasonably implement DQN.
+#                       Plus DQN is even worse than Defender2000 after initial tests -> not worth investigating
 #                       ------------------------------------------------------------------------------------------------
 #                       DQN is Q-learning with Neural Networks . The motivation behind is simply related to big state
 #                       space environments where defining a Q-table would be a very complex, challenging and time-
@@ -66,7 +66,7 @@ import math
 #       Hybrid (OffPolicyRLModel)
 #           DDPG    Deep Deterministic Policy Gradient
 #                       ------------------------------------------------------------------------------------------------
-#                       only Box space supported, not fixable (and not reasonable to use)!
+#                       only Box space supported, not fixable (and probably not reasonable to use)!
 #                       ------------------------------------------------------------------------------------------------
 #                       https://arxiv.org/pdf/1802.09477.pdf
 #                       [...] Our algorithm builds on Double Q-learning, by taking the minimum value between a pair of
@@ -76,7 +76,7 @@ import math
 #
 #           SAC     Soft Actor Critic
 #                       ------------------------------------------------------------------------------------------------
-#                       only Box space supported, not fixable (and not reasonable to use)!
+#                       only Box space supported, not fixable (and probably not reasonable to use)!
 #                       ------------------------------------------------------------------------------------------------
 #                       https://arxiv.org/abs/1801.01290
 #                       [...]. By combining off-policy updates with a stable stochastic actor-critic formulation, our
@@ -85,7 +85,7 @@ import math
 #
 #           TD3     Twin Delayed DDPG
 #                       ------------------------------------------------------------------------------------------------
-#                       only Box space supported, not fixable (and not reasonable to use)!
+#                       only Box space supported, not fixable (and probably not reasonable to use)!
 #                       ------------------------------------------------------------------------------------------------
 #                       https://arxiv.org/pdf/1509.02971.pdf
 #                       We adapt the ideas underlying the success of Deep Q-Learning to the continuous
@@ -124,11 +124,11 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     parameters_folder += f"1e{timesteps_exponent}_training/"
 
     rl = "RL"
-    random = "Random"
     defender2000 = "Defender2000"
+    random = "Random"
     static = "Static"
 
-    non_rl = [random, defender2000, static]
+    non_rl = [defender2000, random, static]
 
     # ------------------------- debug ------------------------- #
     show_model_after_each_step = False
@@ -150,8 +150,8 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     # times estimations
     base_learn_time_estimate = (timesteps / 10 ** 5) * 60
     alorithm_learn_times = {
-        "A2C": base_learn_time_estimate * 1.1,
-        "PPO": base_learn_time_estimate * 2.3
+        "A2C": base_learn_time_estimate * 1.8,
+        "PPO": base_learn_time_estimate * 3.3
     }
     steps_per_sim = env.get_steps_per_simulation()
     sim_time_estimate = simulations_count * steps_per_sim / 900
@@ -204,8 +204,8 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     best_avg_reward = [-1000, random]
 
     # add non rl algorithms (random, defender2000 and static) for evaluation
-    algorithms[random] = random
     algorithms[defender2000] = Defender2000(only_nodes, only_detection_systems, nodes_pause, detection_systems_pause)
+    algorithms[random] = random
     algorithms[static] = static
 
     if simulate_only_one:
@@ -220,7 +220,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     print(f"Estimated finish:   {timestamp_to_datetime(start+sim_time_estimate)}.")
     print("...")
 
-    def run_rl_simulation(m):
+    def run_simulation(m):
         obs = env.reset()
         done = False
 
@@ -232,22 +232,10 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
             if show_model_after_each_step:
                 env.render()
 
-    def run_defender_2000_simulation(m):
-        obs = env.reset()
-        done = False
-
-        while not done:
-            action = m.predict(obs)
-
-            # do action on model
-            obs, rewards, done, info = env.step(action)
-            if show_model_after_each_step:
-                env.render()
-
     def run_random_simulation():
         env.reset()
         done = False
-        locked_nodes, locked_detection_systems = create_locked_lists()
+        locked_nodes, locked_detection_systems = create_locked_lists(*env.action_space.nvec)
 
         while not done:
             subtract_one(locked_nodes)
@@ -256,31 +244,10 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
             # create new action until value in locked list is 0 and 0, i.e. no pause
             action = [0, 0]
 
-            valid_node_action_count = locked_nodes.count(0)
-            index = choice(range(valid_node_action_count))
-            for j in range(len(locked_nodes)):
-                if index == 0:
-                    action[0] = j
-                    break
-
-                if locked_nodes[j] == 0:
-                    index -= 1
-
-            valid_ds_action_count = locked_detection_systems.count(0)
-            index = choice(range(valid_ds_action_count))
-            for j in range(len(locked_detection_systems)):
-                if index == 0:
-                    action[1] = j
-                    break
-
-                if locked_nodes[j] == 0:
-                    index -= 1
-
-            # cannot lock null action
-            if action[0]:
-                locked_nodes[action[0]] = nodes_pause
-            if action[1]:
-                locked_detection_systems[action[1]] = detection_systems_pause
+            if not only_detection_systems:
+                action[0] = choose_random_from_list(locked_nodes, nodes_pause)
+            if not only_nodes:
+                action[1] = choose_random_from_list(locked_detection_systems, detection_systems_pause)
 
             # do action on model
             obs, rewards, done, info = env.step(action)
@@ -299,13 +266,23 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
                 env.render()
 
     def update_results():
+        """
+        retrieves all information from the underlying env, parses it and saves it to "global" results dict
+        """
         nonlocal results
         results["steps"].append(env.get_counter())
-        results["total_reward"].append(env.get_total_reward())
+
+        penalty = env.get_invalid_actions_penalty()
+        reward = env.get_total_reward()
+        results["total_reward"].append(reward - penalty)
 
         null_actions_count = env.get_null_actions_count()
         results["null_actions_count"][0] += null_actions_count[0]
         results["null_actions_count"][1] += null_actions_count[1]
+
+        invalid_actions_count = env.get_invalid_actions_count()
+        results["invalid_actions_count"][0] += invalid_actions_count[0]
+        results["invalid_actions_count"][1] += invalid_actions_count[1]
 
         if env.defender_wins():
             results["defender_wins"] += 1
@@ -320,6 +297,11 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
             print("\n" + str(env))
 
     def evaluate_and_save_results(algo_name):
+        """
+        reads the "global" results dict, parses it's data and writes relevant info for later evaluation to the results
+        file
+        :param algo_name: the name of the algorithm (A2C, PPO, defender2000, ...)
+        """
         nonlocal results
         nonlocal best_avg_steps
         nonlocal best_avg_reward
@@ -337,6 +319,10 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
         avg_null_action_ratio[0] = round(results["null_actions_count"][0] / sum_steps, 3)
         avg_null_action_ratio[1] = round(results["null_actions_count"][1] / sum_steps, 3)
 
+        avg_invalid_actions = [0, 0]
+        avg_invalid_actions[0] = round(results["invalid_actions_count"][0] / sum_steps, 3)
+        avg_invalid_actions[1] = round(results["invalid_actions_count"][1] / sum_steps, 3)
+
         if avg_steps > best_avg_steps[0]:
             best_avg_steps = [avg_steps, algo_name]
 
@@ -351,10 +337,11 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
 
         f.write("*********************************************************************\n")
         f.write(f"Simulation Type:          {algo_name}\n")
-        f.write(f"--------------------------------------------------------------------\n")
+        f.write("---------------------------------------------------------------------\n")
         f.write(f"Avg steps:                {avg_steps}\n")
         f.write(f"Avg reward/step:          {avg_reward}\n")
-        f.write(f"Avg null action ratio:    {avg_null_action_ratio}\n\n")
+        f.write(f"Avg null action ratio:    {avg_null_action_ratio}\n")
+        f.write(f"Avg invalid actions:      {avg_invalid_actions}\n\n")
         f.write(f"Min steps:                {min_steps}\n")
         f.write(f"Max steps:                {max_steps}\n\n")
         f.write(f"Defender wins:            {defender_wins}\n")
@@ -374,22 +361,22 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     f.write(f"Nodes Pause:               {nodes_pause}\n")
     f.write(f"Detection Systems Pause:   {detection_systems_pause}\n")
 
-    for algorithm in algorithms:
+    for algorithm, model in algorithms.items():
         if algorithm not in non_rl:
             algo_type = rl
             try:
-                model = algorithms[algorithm]
                 model = model.load(parameters_folder + algorithm)
             except FileNotFoundError:
+                f.write("---------------------------------------------------------------------\n")
                 f.write(f"Algorithm not yet trained: {algorithm}\n")
                 continue
         else:
             algo_type = algorithm
-            model = algorithms[algorithm]
 
         # init or clear results
         results = {
             "null_actions_count": [0, 0],
+            "invalid_actions_count": [0, 0],
             "min_steps": steps_per_sim,
             "max_steps": 0,
             "defender_wins": 0,
@@ -400,11 +387,8 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
         print(f"Start simulating {algorithm}.")
         for i in range(simulations_count):
             # run 1 complete simulation (until attacker or defender wins)
-            if algo_type is rl:
-                run_rl_simulation(model)
-
-            elif algo_type is defender2000:
-                run_defender_2000_simulation(model)
+            if algo_type in [rl, defender2000]:
+                run_simulation(model)
 
             elif algo_type is random:
                 run_random_simulation()
@@ -416,7 +400,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
                 raise Exception(f"Unknown algorithm type: {algo_type}.")
 
             update_results()
-            stdout.write("\r%d simulations done." % i+1)
+            stdout.write("\r%d simulations done." % (i+1))
             stdout.flush()
 
         evaluate_and_save_results(algorithm)
@@ -430,16 +414,22 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     f.write(f"{best_avg_reward[1]} is the most efficient algorithm with {best_avg_reward[0]} avg reward/step.\n")
     f.close()
 
-    print("Actual file contents:\n")
-    f = open(results_file, "r")
-    s = "".join(f.readlines())
-    print(s)
-    f.close()
+    # ------------------------- finalize ------------------------- #
+    print("\nPrinting file content:\n")
+    with open(results_file, "r") as f:
+        s = "".join(f.readlines())
+        print(s)
 
     if simulate_only_one:
         os.remove(results_file)
 
 
 if __name__ == "__main__":
-    main("parameters/tests/", learn=True, timesteps=10**5, simulations_count=100, nodes_pause=10,
-         detection_systems_pause=4)
+    main("parameters/tests/",
+         learn=False,
+         timesteps=10**5,
+         simulations_count=20,
+         only_nodes=False,
+         only_detection_systems=False,
+         nodes_pause=1,
+         detection_systems_pause=1)

@@ -37,9 +37,37 @@ def subtract_one(lst):
         lst[i] = max(lst[i] - 1, 0)
 
 
-def create_locked_lists():
-    # type: () -> List[list, list]
-    return [[0] * (get_restartable_nodes_count() + 1), [0] * (get_detection_systems_count() + 1)]
+def create_locked_lists(nodes_actions, detection_system_actions):
+    # type: (int, int) -> List[list, list]
+    return [[0] * nodes_actions, [0] * detection_system_actions]
+
+
+def choose_random_from_list(lst, pause):
+    # type: (List[int], int) -> int
+    """
+    Get a list with ints between 0 and pause. Choose one of the 0's, sets the value to <pause> and returns the index.
+    :param lst: a list with ints indicating pauses != 0 or ready == 0
+    :param pause: how long a choosen index has to pause
+    :return: the index of a random 0 in the list
+    """
+    valid_action_count = lst.count(0)
+    if valid_action_count == 0:
+        return 0
+
+    index = random.choice(range(valid_action_count))
+    for j in range(len(lst)):
+        if index == 0 and lst[j] == 0:
+
+            # found the index'th 0, if it's not the null action, apply pause
+            if j != 0:
+                lst[j] = pause
+
+            return j
+
+        if lst[j] == 0:
+            index -= 1
+
+    raise Exception(f"Invalid list to choose from: {str(lst)}")
 
 
 # ------------- MODEL ------------- #
@@ -56,7 +84,6 @@ rewards, steps_per_simulation = load_config(graph_name)
 
 
 class MTDEnv(gym.Env):
-    # TODO verify logic
     def __init__(self, only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
         # type: (bool, bool, int, int) -> None
         """
@@ -75,16 +102,18 @@ class MTDEnv(gym.Env):
         self._last_action = None
         self._last_reward = 0
 
-        self._restart_null_action_counter = 0
-        self._switch_null_action_counter = 0
+        self._null_action_counter = [0, 0]
+        self._invalid_action_counter = [0, 0]
         self._total_reward = 0
 
         # stable baselines
+        self._only_nodes = only_nodes
         if only_nodes:
             detection_systems_actions = 1
         else:
             detection_systems_actions = get_detection_systems_count() + 1
 
+        self._only_detection_systems = only_detection_systems
         if only_detection_systems:
             nodes_actions = 1
         else:
@@ -93,7 +122,8 @@ class MTDEnv(gym.Env):
         self.action_space = gym.spaces.MultiDiscrete([nodes_actions, detection_systems_actions])
         self.observation_space = gym.spaces.Discrete(graph.get_obs_range())
 
-        self._locked_nodes, self._locked_detection_systems = create_locked_lists()
+        self._locked_nodes, self._locked_detection_systems = create_locked_lists(nodes_actions,
+                                                                                 detection_systems_actions)
         self._nodes_pause = nodes_pause
         self._detection_systems_pause = detection_systems_pause
 
@@ -101,11 +131,11 @@ class MTDEnv(gym.Env):
     def reset(self):
         # type: () -> int
         graph.reset()
-        self.__init__()
+        self.__init__(self._only_nodes, self._only_detection_systems, self._nodes_pause, self._detection_systems_pause)
         return 0
 
     def step(self, action):
-        # type: (List[int]) -> Tuple[int, int, bool, dict]
+        # type: (List[int, int]) -> (int, int, bool, dict)
         """
         evaluate the given action, then simulate one time step for the attacker
         action in Discrete: 0...restartable_nodes+detection_systems --> parse to MultiDiscrete
@@ -122,21 +152,33 @@ class MTDEnv(gym.Env):
         done = False
 
         self._counter += 1
-        self._last_action = action
 
         subtract_one(self._locked_nodes)
         subtract_one(self._locked_detection_systems)
 
-        # --------------- eval action --------------- #
+        # --------------- parse action --------------- #
         restart_node = action[0]
         switch_detection_system = action[1]
 
+        if self._only_nodes and switch_detection_system:
+            raise Exception("Only nodes mode activated, not able to switch detection systems")
+        if self._only_detection_systems and restart_node:
+            raise Exception("Only detection systems mode activated, not able to restart nodes")
+
         # https://github.com/hill-a/stable-baselines/issues/108
+        # TL;DR: if there is a invalid action, penalize it heavily and do nothing - but only while learning, not in eval
         if self._locked_nodes[restart_node] > 0:
             reward += rewards["invalid_action"]
+            self._invalid_action_counter[0] += 1
+            restart_node = 0
         if self._locked_detection_systems[switch_detection_system] > 0:
             reward += rewards["invalid_action"]
+            self._invalid_action_counter[1] += 1
+            switch_detection_system = 0
 
+        self._last_action = [restart_node, switch_detection_system]
+
+        # --------------- eval action --------------- #
         if restart_node:
             self._locked_nodes[restart_node] = self._nodes_pause
 
@@ -146,7 +188,7 @@ class MTDEnv(gym.Env):
             if self._attacker_pos == node:
                 self._attacker_pos = self._attacker_pos.get_prev()
         else:
-            self._restart_null_action_counter += 1
+            self._null_action_counter[0] += 1
 
         if switch_detection_system:
             self._locked_detection_systems[switch_detection_system] = self._detection_systems_pause
@@ -154,7 +196,7 @@ class MTDEnv(gym.Env):
             detection_systems[switch_detection_system-1].reset_prob()
             reward += rewards["switch_detection_system"]
         else:
-            self._switch_null_action_counter += 1
+            self._null_action_counter[1] += 1
 
         # ---------------- simulate ---------------- #
         val = random.random()
@@ -251,9 +293,21 @@ class MTDEnv(gym.Env):
         # type: () -> int
         return self._total_reward
 
+    def get_last_action(self):
+        # type: () -> (int, int)
+        return self._last_action
+
     def get_null_actions_count(self):
-        # type: () -> List[float]
-        return self._restart_null_action_counter, self._switch_null_action_counter
+        # type: () -> (int, int)
+        return self._null_action_counter
+
+    def get_invalid_actions_count(self):
+        # type: () -> (int, int)
+        return self._invalid_action_counter
+
+    def get_invalid_actions_penalty(self):
+        # type: () -> int
+        return sum(self._invalid_action_counter) * rewards["invalid_action"]
 
     def __str__(self):
         # type: () -> str

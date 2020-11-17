@@ -51,7 +51,7 @@ class Node:
         # type: () -> dict
         """
         gets the next nodes and the probability to get into the next nodes
-        :return: {planner: 0.54, authorizer_honeypot: 0.21}
+        :return: e.g.: {planner: 0.54, authorizer_honeypot: 0.21}
         """
         return {node: self._next[node]["current"] for node in self._next}
 

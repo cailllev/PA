@@ -109,7 +109,7 @@
         "reset_node": "internet",
         "probs": {
           "init": "p_IDS_0",
-          "de": "dp_IDS"
+          "de": "de_IDS"
         }
       },
       "PS": {
@@ -117,7 +117,7 @@
         "reset_node": "internet",
         "probs": {
           "init": "p_PS_0",
-          "de": "dp_PS"
+          "de": "de_PS"
         }
       }
     },
@@ -125,25 +125,25 @@
       "simple": {
         "nodes": {
           "p_auth_0": 0.2,
-          "dp_auth": 0.02,
+          "dp_auth": 0.1,
 
           "p_plan_0": 0.2,
-          "dp_plan": 0.02,
+          "dp_plan": 0.1,
 
           "p_db1_0": 0.2,
-          "dp_db1": 0.02,
+          "dp_db1": 0.1,
           "p_db2_0": 0.2,
-          "dp_db2": 0.02,
+          "dp_db2": 0.1,
           "p_db3_0": 0.2,
-          "dp_db3": 0.02,
+          "dp_db3": 0.1,
 
           "p_auth_to_honey_0": 0.3,
-          "dp_auth_to_honey": -0.01,
+          "dp_auth_to_honey": -0.05,
           "p_honey_to_auth_0": 0.0,
           "dp_honey_to_auth": 0.1,
 
           "p_plan_to_honey_0": 0.3,
-          "dp_plan_to_honey": -0.01,
+          "dp_plan_to_honey": -0.05,
           "p_honey_to_plan_0": 0.0,
           "dp_honey_to_plan": 0.1,
 
@@ -152,9 +152,9 @@
         },
         "detection_systems": {
           "p_IDS_0": 0.9911,
-          "dp_IDS": 0.5,
-          "p_PS_0": 0.6,
-          "dp_PS": 0.5
+          "de_IDS": 0.5,
+          "p_PS_0": 0.5,
+          "de_PS": 0.5
         }
       }
     },

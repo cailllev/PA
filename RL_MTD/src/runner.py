@@ -12,4 +12,11 @@ else:
 
 # ------------------------ runner ------------------------ #
 for i in range(3, 8):
-    mtd.main(path, learn=learn, timesteps=10**i, only_nodes=True)
+    mtd.main(path,
+             learn=learn,
+             timesteps=10**i,
+             simulations_count=20,
+             only_nodes=False,
+             only_detection_systems=False,
+             nodes_pause=1,
+             detection_systems_pause=1)
