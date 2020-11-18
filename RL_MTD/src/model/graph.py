@@ -31,6 +31,9 @@ class Graph:
         :param graph_name: name of the graph (in attack_graphs.json)
         :param attack_name: name of the attack (in attack_graphs.json)
         """
+        self._graph_name = graph_name
+        self._attack_name = attack_name
+
         graph_data = load_graph_data(graph_name)
         nodes_data = graph_data["nodes"]
         nodes_attack_data = graph_data["attacks"][attack_name]["nodes"]
@@ -110,15 +113,20 @@ class Graph:
                             found_prob = True
                             break
 
-                    assert found_prob, f"\nNo key found with name: {next_nodes[next_node][prob]} in attack[nodes]." \
-                                       f"\n-> No prob {prob} for {next_node.get_name()} -> Exit"
+                    assert found_prob, f"\nNo key found with name: {next_nodes[next_node][prob]} in " \
+                                       f"['{self._graph_name}']['{self._attack_name}'][nodes]." \
+                                       f"\nThis key is needed for the transition: '{node.get_name()}' -> " \
+                                       f"'{next_node.get_name()}'" \
+                                       f"\nAdd for example '{next_nodes[next_node][prob]}': 0.1 to " \
+                                       f"['{self._graph_name}']['{self._attack_name}'][nodes]."
 
             node.set_next(next_nodes)
 
         if len(attack_data) != len(used_keys):
             for key in used_keys:
                 attack_data.pop(key)
-            assert False, f"Error, unused key(s) from attack data: {str(attack_data)}"
+            assert False, f"\nUnused keys from attack data: {str(attack_data)}." \
+                          f"\nRemove those keys from ['{self._graph_name}'][attacks]['{self._attack_name}']"
 
         # add the current prob (equal to init)
         for node in self._nodes:
@@ -139,21 +147,21 @@ class Graph:
 
             # get probs
             probs = {}
-            for prob in detection_system_data[detection_system]["probs"]:
+            all_probs = detection_system_data[detection_system]["probs"]
+            for prob in all_probs:
 
                 found_prob = False
                 for key in attack_data:
-                    if detection_system_data[detection_system]["probs"][prob] == key:
+                    if all_probs[prob] == key:
                         probs[prob] = attack_data[key]
                         if not used_keys.__contains__(key):
                             used_keys.append(key)
                         found_prob = True
                         break
 
-                assert found_prob, f"\nNo key found with name: " \
-                                   f"{detection_system_data[detection_system]['probs'][prob]} " \
-                                   f"in attack_data[detection_systems][{detection_system}]."\
-                                   f"\n-> No prob {prob} for {detection_system} -> Exit"
+                location = f"['{self._graph_name}']['attacks']['{self._attack_name}']['detection_systems']."
+                assert found_prob, f"\nNo key found with name: {all_probs[prob]} in {location} "\
+                                   f"\nAdd for example '{all_probs[prob]}': 0.1 to {location}"
 
             # get reset node
             reset_node_name = detection_system_data[detection_system]["reset_node"]
@@ -165,7 +173,8 @@ class Graph:
                     break
 
             assert found_reset_node, f"\nNo node with name '{reset_node_name}' in nodes." \
-                                     f"\n-> No reset node for {detection_system} -> Exit"
+                                     f"\nWrite a valid reset node to " \
+                                     f"['{self._graph_name}']['detection_systems']['{detection_system}']['reset_node']."
 
             self._detection_systems.append(d.DetectionSystem(detection_system, probs, reset_node_name,
                                                              detection_system_data[detection_system]["after_nodes"]))
@@ -182,12 +191,14 @@ class Graph:
                         break
 
                 assert found_node, f"\nNo node with name '{name}' in nodes." \
-                                   f"\n-> {detection_system} not able to attach to unknown node -> Exit"
+                                   f"\nRemove or correct value '{name}' in " \
+                                   f"['{self._graph_name}']['detection_systems']['{detection_system}']['after_nodes']."
 
         if len(attack_data) != len(used_keys):
             for key in used_keys:
                 attack_data.pop(key)
-            assert False, f"Error, unused key(s) from attack data: {str(attack_data)}"
+            assert False, f"\nUnused keys from attack data: {str(attack_data)}." \
+                          f"\nRemove those keys from ['{self._graph_name}'][attacks]['{self._attack_name}']"
 
     def get_nodes(self):
         # type: () -> List[n.Node]
