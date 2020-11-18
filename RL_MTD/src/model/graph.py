@@ -18,6 +18,11 @@ def load_graph_data(graph_name):
     return all_data[graph_name]
 
 
+def get_null_graph():
+    # type: () -> Graph
+    return Graph("null", "null")
+
+
 class Graph:
     def __init__(self, graph_name, attack_name):
         # type: (str, str) -> None
@@ -105,7 +110,8 @@ class Graph:
                             found_prob = True
                             break
 
-                    assert found_prob, f"Error, did not find prob {prob} for {next_node.get_name()}"
+                    assert found_prob, f"\nNo key found with name: {next_nodes[next_node][prob]} in attack[nodes]." \
+                                       f"\n-> No prob {prob} for {next_node.get_name()} -> Exit"
 
             node.set_next(next_nodes)
 
@@ -144,7 +150,10 @@ class Graph:
                         found_prob = True
                         break
 
-                assert found_prob, f"Error, did not find prob {prob} for {detection_system}"
+                assert found_prob, f"\nNo key found with name: " \
+                                   f"{detection_system_data[detection_system]['probs'][prob]} " \
+                                   f"in attack_data[detection_systems][{detection_system}]."\
+                                   f"\n-> No prob {prob} for {detection_system} -> Exit"
 
             # get reset node
             reset_node_name = detection_system_data[detection_system]["reset_node"]
@@ -155,7 +164,8 @@ class Graph:
                     found_reset_node = True
                     break
 
-            assert found_reset_node, f"Error, did not find reset node {reset_node_name} for {detection_system}"
+            assert found_reset_node, f"\nNo node with name '{reset_node_name}' in nodes." \
+                                     f"\n-> No reset node for {detection_system} -> Exit"
 
             self._detection_systems.append(d.DetectionSystem(detection_system, probs, reset_node_name,
                                                              detection_system_data[detection_system]["after_nodes"]))
@@ -171,7 +181,8 @@ class Graph:
                         found_node = True
                         break
 
-                assert found_node, f"Error, did not find node {name} for {detection_system}"
+                assert found_node, f"\nNo node with name '{name}' in nodes." \
+                                   f"\n-> {detection_system} not able to attach to unknown node -> Exit"
 
         if len(attack_data) != len(used_keys):
             for key in used_keys:
@@ -207,5 +218,5 @@ class Graph:
 
 
 if __name__ == "__main__":
-    g = Graph("simple_webservice", "simple")
+    g = Graph("simple_webservice", "professional")
     print(g)

@@ -1,7 +1,7 @@
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3 import A2C, PPO
 
-from src.env.mtd_env import MTDEnv, subtract_one, create_locked_lists, choose_random_from_list
+from src.env.mtd_env import MTDEnv, subtract_one, create_locked_lists, choose_random_from_list, set_config
 from src.defender2000 import Defender2000
 
 from datetime import datetime
@@ -26,8 +26,8 @@ import math
 #   Model Free
 #       Policy Optimization (ActorCriticRLModel)
 #           A2C     Advantage Actor Critic
-#                       - Advantage: Similarly to PG where the update rule used the dicounted returns from a set of
-#                       experiences in order to tell the agnet which acttions were “good” or “bad”.
+#                       - Advantage: Similarly to PG where the update rule used the discounted returns from a set of
+#                       experiences in order to tell the agent which actions were “good” or “bad”.
 #                       - Actor-critic: combines the benefits of both approaches from policy-iteration method as PG and
 #                       value-iteration method as Q-learning (See below). The network will estimate both a value
 #                       function V(s) (how good a certain state is to be in) and a policy π(s).
@@ -51,14 +51,14 @@ import math
 #
 #           HER     Hindsight Experience Replay (BaseRLModel)
 #                       ------------------------------------------------------------------------------------------------
-#                       Too many challanges to implement HER, unfixable with current setup. Initial list of requirements
+#                       Too many challenges to implement HER, unfixable with current setup. Initial list of requirements
 #                           - cannot use normal env, needs VecEnv (but not DummyVecEnv, doesnt work), so we are left
 #                               with SubProcEnv or own VecEnv implementation
 #                           - cannot create env in SubProcEnv, multiprocessing exception
 #                           - own VecEnv implementation not reasonable
 #                           - cannot use MultiDiscrete
 #                       ------------------------------------------------------------------------------------------------
-#                       In Hindsight Experience Replay method, basically a DQN is suplied with a state and a desired
+#                       In Hindsight Experience Replay method, basically a DQN is supplied with a state and a desired
 #                       end-state, or in other words goal. It allow to quickly learn when the rewards are sparse. In
 #                       other words when the rewards are uniform for most of the time, with only a few rare reward-
 #                       values that really stand out.
@@ -93,20 +93,23 @@ import math
 #                       policy gradient that can operate over continuous action spaces. [...]
 #
 #   Model Based
-#       * no support from stable_baselines plus not usefull because agent cannot predict the next state most of the time
+#       * no support from stable_baselines plus not useful because agent cannot predict the next state most of the time
 
 
-def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, simulate_only_one=False,
-         only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
-    # type: (str, bool, int, int, bool, bool, bool, int, int) -> None
+def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=100, simulate_only_one=False,
+         graph="simple_webservice", attack="professional", only_nodes=False, only_detection_systems=False,
+         nodes_pause=1, detection_systems_pause=1):
+    # type: (str, bool, int, int, bool, str, str, bool, bool, int, int) -> None
     """
     simulates (and trains) rl agents and own agents (defender2000, random and static) on MTDEnv and writes the results 
     and trained parameters to {{parameters_folder}}
     :param parameters_folder: where the parameters are saved to and loaded from
     :param learn: skip learning?
-    :param timesteps: steps for learning
-    :param simulations_count: how many indiviual simulations per algoritm
+    :param learn_steps: steps for learning
+    :param simulations_count: how many individual simulations per algorithm
     :param simulate_only_one: False or None -> simulate all; A2C -> simulate only A2C and write results to temp file
+    :param graph: the name of the graph as in config/attack_graphs.json
+    :param attack: the name of the attack as in config/attack_graphs.json[graph][attacks]
     :param only_nodes: only able to restart nodes, detection systems are fixed
     :param only_detection_systems: only able to switch detection systems, nodes are fixed
     :param nodes_pause: pause between same node restarts (1=every step possible)
@@ -120,8 +123,8 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     print(f"Detection Systems Pause:   {detection_systems_pause}")
 
     # ------------------------- const ------------------------- #
-    timesteps_exponent = round(math.log10(timesteps))
-    parameters_folder += f"1e{timesteps_exponent}_training/"
+    learn_steps_exponent = round(math.log10(learn_steps))
+    parameters_folder += f"1e{learn_steps_exponent}_training/"
 
     rl = "RL"
     defender2000 = "Defender2000"
@@ -138,6 +141,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
     if not os.path.isdir(parameters_folder):
         os.mkdir(parameters_folder)
 
+    set_config(graph, attack)
     env = MTDEnv(only_nodes, only_detection_systems, nodes_pause, detection_systems_pause)
 
     # only to learn; Defender2000, Random and Static are added later
@@ -147,18 +151,26 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
         "PPO": PPO(ActorCriticPolicy, env, n_steps=50, verbose=0),
     }
 
+    learning_time = {
+        "A2C": "unknown",
+        "PPO": "unknown",
+        defender2000: "0 sec",
+        random: "0 sec",
+        static: "0 sec"
+    }
+
     # times estimations
-    base_learn_time_estimate = (timesteps / 10 ** 5) * 60
-    alorithm_learn_times = {
-        "A2C": base_learn_time_estimate * 1.8,
-        "PPO": base_learn_time_estimate * 3.3
+    base_learn_time_estimate = (learn_steps / 10 ** 3)
+    algorithm_learn_times = {
+        "A2C": base_learn_time_estimate * 0.8,
+        "PPO": base_learn_time_estimate * 2.0
     }
     steps_per_sim = env.get_steps_per_simulation()
     sim_time_estimate = simulations_count * steps_per_sim / 900
     if simulate_only_one:
         results_file = "temp.txt"
         if simulate_only_one in non_rl:
-            sim_time_estimate //= 200
+            sim_time_estimate /= 200
         else:
             sim_time_estimate /= 2
     else:
@@ -189,15 +201,19 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
 
             start = time.time()
 
-            print(f"{timesteps} steps to learn, with updates to policy each {model.n_steps} steps.")
+            print(f"{learn_steps} steps to learn, with updates to policy each {model.n_steps} steps.")
             print(f"Start:              {timestamp_to_datetime(start)}.")
-            print(f"Estimated finish:   {timestamp_to_datetime(start+alorithm_learn_times[algorithm])}.")
+            print(f"Estimated finish:   {timestamp_to_datetime(start+algorithm_learn_times[algorithm])}.")
             print("...")
 
-            model.learn(total_timesteps=timesteps)
+            model.learn(total_timesteps=learn_steps)
+            end = time.time()
+
             model.save(parameters_folder + algorithm)
 
-            print(f"Actual finish:      {timestamp_to_datetime(time.time())}.")
+            learning_time[algorithm] = f"{round(end - start, 1)} sec"
+
+            print(f"Actual finish:      {timestamp_to_datetime(end)}.")
 
     # ------------------------ simulation helpers ------------------------ #
     best_avg_steps = [0, random]
@@ -228,7 +244,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
             action, _ = m.predict(obs)
 
             # do action on model
-            obs, rewards, done, info = env.step(action)
+            obs, _, done, _ = env.step(action)
             if show_model_after_each_step:
                 env.render()
 
@@ -250,7 +266,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
                 action[1] = choose_random_from_list(locked_detection_systems, detection_systems_pause)
 
             # do action on model
-            obs, rewards, done, info = env.step(action)
+            obs, _, done, _ = env.step(action)
             if show_model_after_each_step:
                 env.render()
 
@@ -261,7 +277,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
 
         while not done:
             # do action on model
-            obs, rewards, done, info = env.step(null_action)
+            obs, _, done, _ = env.step(null_action)
             if show_model_after_each_step:
                 env.render()
 
@@ -302,7 +318,6 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
         file
         :param algo_name: the name of the algorithm (A2C, PPO, defender2000, ...)
         """
-        nonlocal results
         nonlocal best_avg_steps
         nonlocal best_avg_reward
 
@@ -337,6 +352,7 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
 
         f.write("*********************************************************************\n")
         f.write(f"Simulation Type:          {algo_name}\n")
+        f.write(f"Learning Time:            {learning_time[algo_name]}\n")
         f.write("---------------------------------------------------------------------\n")
         f.write(f"Avg steps:                {avg_steps}\n")
         f.write(f"Avg reward/step:          {avg_reward}\n")
@@ -427,8 +443,8 @@ def main(parameters_folder, learn=True, timesteps=10**4, simulations_count=100, 
 if __name__ == "__main__":
     main("parameters/tests/",
          learn=False,
-         timesteps=10**5,
-         simulations_count=20,
+         learn_steps=10 ** 3,
+         simulations_count=10,
          only_nodes=False,
          only_detection_systems=False,
          nodes_pause=1,

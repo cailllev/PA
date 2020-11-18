@@ -48,7 +48,10 @@ rewards
 - refactored action space from multidiscrete to discrete (still same functionality) to add RL method DQN
   - refactored back after seeing DQN performs very bad
 - remove bug in mtd_env, reset env did not reset graph -> fixed
-- remove unnecessary rewards
+- remove unnecessary or ambigous rewards
+- add invalid actions options for "pause" mode
+- implement main method and runner
+- add second attack to simulate "wrong" learning
 ```
 "rewards": 
   "switch_detection_system": -2,
@@ -56,4 +59,6 @@ rewards
   "progression": -50,
   "attacker_wins": -100,
   "invalid_action": -10000
+
+  "bias_per_step": 60
 ```

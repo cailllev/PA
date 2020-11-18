@@ -1,7 +1,7 @@
 import src.rl_mtd as mtd
 
 learn = True
-path = "parameters/v3_max_security/"
+path = "parameters/v3_normal/"
 
 # ------------------------- info ------------------------- #
 if learn:
@@ -14,8 +14,9 @@ else:
 for i in range(3, 8):
     mtd.main(path,
              learn=learn,
-             timesteps=10**i,
-             simulations_count=20,
+             learn_steps=10 ** i,
+             simulations_count=200,
+             attack="professional",
              only_nodes=False,
              only_detection_systems=False,
              nodes_pause=1,
