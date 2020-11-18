@@ -162,8 +162,8 @@ def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=1
     # times estimations
     base_learn_time_estimate = (learn_steps / 10 ** 3)
     algorithm_learn_times = {
-        "A2C": base_learn_time_estimate * 0.8,
-        "PPO": base_learn_time_estimate * 2.0
+        "A2C": base_learn_time_estimate * 0.9,
+        "PPO": base_learn_time_estimate * 1.8
     }
     steps_per_sim = env.get_steps_per_simulation()
     sim_time_estimate = simulations_count * steps_per_sim / 900
