@@ -47,6 +47,18 @@ class DetectionSystemTest(unittest.TestCase):
         self.honeypot.get_detection_system().learn()
         self.assertEqual(self.detection_system.get_prob(), 0.975)
 
+    def test_null_detection_system(self):
+        ds = d.get_null_detection_system()
+        self.assertEqual(ds.get_name(), "null")
+        self.assertEqual(ds.caught_attacker().get_name(), n.get_null_node().get_name())
+
+        # no learning with null
+        self.assertEqual(ds.get_prob(), 0)
+        ds.reset()
+        self.assertEqual(ds.get_prob(), 0)
+        ds.learn()
+        self.assertEqual(ds.get_prob(), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

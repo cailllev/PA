@@ -3,14 +3,48 @@ import gym
 import random
 
 import src.model.graph as g
+import src.model.node as n
+import src.model.detection_system as d
 
 from typing import List, Tuple
 
 from pathlib import Path
 path = Path(__file__).parent / "../../config/attack_graphs.json"
 
+# ------------- TO INITIALIZE ------------- #
+env_config_init = False
 
-def load_config(name):
+nodes = [n.get_null_node()]
+graph = g.get_null_graph()
+detection_systems = d.get_null_detection_system()
+
+start_node = end_node = n.get_null_node()
+
+rewards = {}
+steps_per_simulation = 0
+# ----------------------------------------- #
+
+
+def set_config(graph_name, attack_name):
+    # type: (str, str) -> None
+    global env_config_init, nodes, graph, detection_systems, start_node, end_node, rewards, steps_per_simulation
+
+    env_config_init = True
+
+    # ------------- MODEL ------------- #
+    graph_name = graph_name
+    graph = g.Graph(graph_name, attack_name)
+    nodes = graph.get_nodes()
+    detection_systems = graph.get_detection_systems()
+
+    start_node = nodes[0]
+    end_node = nodes[-1]
+
+    # -------------- GYM -------------- #
+    rewards, steps_per_simulation = load_gym_config(graph_name)
+
+
+def load_gym_config(name):
     # type: (str) -> Tuple[dict, int]
     f = open(path, "r")
     all_data = json.load(f)
@@ -70,19 +104,6 @@ def choose_random_from_list(lst, pause):
     raise Exception(f"Invalid list to choose from: {str(lst)}")
 
 
-# ------------- MODEL ------------- #
-graph_name = "simple_webservice"
-graph = g.Graph(graph_name, "simple")
-nodes = graph.get_nodes()
-detection_systems = graph.get_detection_systems()
-
-start_node = nodes[0]
-end_node = nodes[-1]
-
-# -------------- GYM -------------- #
-rewards, steps_per_simulation = load_config(graph_name)
-
-
 class MTDEnv(gym.Env):
     def __init__(self, only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
         # type: (bool, bool, int, int) -> None
@@ -93,7 +114,10 @@ class MTDEnv(gym.Env):
         :param nodes_pause: pause between same node restarts (1=every step possible)
         :param detection_systems_pause: pause between same detection system switches (1=every step possible)
         """
-        self._attacker_pos = start_node
+        if not env_config_init:
+            raise Exception("mtd_env module is not configured, call env.set_config() first")
+
+        self._attacker_pos: n.Node = start_node
 
         self._counter = 0
         self._steps_per_simulation = steps_per_simulation
@@ -160,18 +184,26 @@ class MTDEnv(gym.Env):
         restart_node = action[0]
         switch_detection_system = action[1]
 
-        if self._only_nodes and switch_detection_system:
-            raise Exception("Only nodes mode activated, not able to switch detection systems")
+        # check if action is invalid
+        invalid_action = [0, 0]
         if self._only_detection_systems and restart_node:
-            raise Exception("Only detection systems mode activated, not able to restart nodes")
+            invalid_action[0] = 1
+        elif self._locked_nodes[restart_node] > 0:
+            invalid_action[0] = 1
+
+        if self._only_nodes and switch_detection_system:
+            invalid_action[1] = 1
+        elif self._locked_detection_systems[switch_detection_system] > 0:
+            invalid_action[1] = 1
 
         # https://github.com/hill-a/stable-baselines/issues/108
         # TL;DR: if there is a invalid action, penalize it heavily and do nothing - but only while learning, not in eval
-        if self._locked_nodes[restart_node] > 0:
+        if invalid_action[0]:
             reward += rewards["invalid_action"]
             self._invalid_action_counter[0] += 1
             restart_node = 0
-        if self._locked_detection_systems[switch_detection_system] > 0:
+
+        if invalid_action[1]:
             reward += rewards["invalid_action"]
             self._invalid_action_counter[1] += 1
             switch_detection_system = 0
@@ -199,14 +231,13 @@ class MTDEnv(gym.Env):
             self._null_action_counter[1] += 1
 
         # ---------------- simulate ---------------- #
-        val = random.random()
         self._attacker_pos.update_probs()
 
         # Detection System catching attacker (unless already in honeypot)
         caught = False
         detection_system = self._attacker_pos.get_detection_system()
         if detection_system and not self._attacker_pos.is_honeypot():
-            if val < detection_system.get_prob():
+            if detection_system.get_prob() > random.random():
                 obs = self._attacker_pos.get_index()
                 self._attacker_pos = detection_system.caught_attacker()
                 caught = True
@@ -219,15 +250,25 @@ class MTDEnv(gym.Env):
         # Attacker getting into next node, only possible if not caught
         if not caught:
             probs = self._attacker_pos.get_probs()
-            running_sum = 0
-            for node in probs:
-                running_sum = running_sum + probs[node]
-                if val < running_sum:
-                    self._attacker_pos.set_compromised(node)
-                    self._attacker_pos = node
-                    break
+            biggest_prob = 0
+            biggest_prob_node = None
+            for next_node, prob in probs.items():
+                val = random.random()
+                # attacker getting into next
+                if prob > val:
+                    # which next is most likely?
+                    surplus = (prob - val) / prob
+                    if surplus > biggest_prob:
+                        biggest_prob = surplus
+                        biggest_prob_node = next_node
+
+            if biggest_prob_node:
+                self._attacker_pos.set_compromised(biggest_prob_node)
+                self._attacker_pos = biggest_prob_node
 
         # ---------------- finalize ---------------- #
+        reward += rewards["bias_per_step"]
+
         if not self._attacker_pos.is_honeypot():
             reward += self._attacker_pos.get_progress_level() * rewards["progression"]
 
@@ -324,5 +365,9 @@ class MTDEnv(gym.Env):
 
 
 if __name__ == "__main__":
+    set_config("simple_webservice", "professional")
     m = MTDEnv()
+    print(str(m))
+
+    m.step([0, 0])
     print(str(m))

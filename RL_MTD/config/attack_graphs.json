@@ -122,28 +122,28 @@
       }
     },
     "attacks": {
-      "simple": {
+      "professional": {
         "nodes": {
-          "p_auth_0": 0.2,
+          "p_auth_0": 0.6,
           "dp_auth": 0.1,
 
-          "p_plan_0": 0.2,
+          "p_plan_0": 0.6,
           "dp_plan": 0.1,
 
-          "p_db1_0": 0.2,
+          "p_db1_0": 0.4,
           "dp_db1": 0.1,
-          "p_db2_0": 0.2,
+          "p_db2_0": 0.4,
           "dp_db2": 0.1,
-          "p_db3_0": 0.2,
+          "p_db3_0": 0.4,
           "dp_db3": 0.1,
 
-          "p_auth_to_honey_0": 0.3,
-          "dp_auth_to_honey": -0.05,
+          "p_auth_to_honey_0": 0.7,
+          "dp_auth_to_honey": -0.1,
           "p_honey_to_auth_0": 0.0,
           "dp_honey_to_auth": 0.1,
 
-          "p_plan_to_honey_0": 0.3,
-          "dp_plan_to_honey": -0.05,
+          "p_plan_to_honey_0": 0.7,
+          "dp_plan_to_honey": -0.1,
           "p_honey_to_plan_0": 0.0,
           "dp_honey_to_plan": 0.1,
 
@@ -156,6 +156,41 @@
           "p_PS_0": 0.5,
           "de_PS": 0.5
         }
+      },
+      "scrip_kiddies": {
+        "nodes": {
+          "p_auth_0": 0.3,
+          "dp_auth": 0.05,
+
+          "p_plan_0": 0.3,
+          "dp_plan": 0.05,
+
+          "p_db1_0": 0.2,
+          "dp_db1": 0.05,
+          "p_db2_0": 0.2,
+          "dp_db2": 0.05,
+          "p_db3_0": 0.2,
+          "dp_db3": 0.05,
+
+          "p_auth_to_honey_0": 0.85,
+          "dp_auth_to_honey": -0.05,
+          "p_honey_to_auth_0": 0.0,
+          "dp_honey_to_auth": 0.05,
+
+          "p_plan_to_honey_0": 0.85,
+          "dp_plan_to_honey": -0.05,
+          "p_honey_to_plan_0": 0.0,
+          "dp_honey_to_plan": 0.05,
+
+          "p_e_0": 1,
+          "dp_e": 0
+        },
+        "detection_systems": {
+          "p_IDS_0": 0.9955,
+          "de_IDS": 0.25,
+          "p_PS_0": 0.75,
+          "de_PS": 0.25
+        }
       }
     },
     "rewards": {
@@ -163,7 +198,9 @@
       "restart_node": -5,
       "progression": -50,
       "attacker_wins": -100,
-      "invalid_action": -10000
+      "invalid_action": -10000,
+
+      "bias_per_step": 60
     },
     "steps_per_simulation": 5000
   },
@@ -205,6 +242,16 @@
           "p20": 1,
           "dp2": 0
         },
+        "detection_systems": {}
+      }
+    }
+  },
+  "null": {
+    "nodes": {},
+    "detection_systems": {},
+    "attacks": {
+      "null": {
+        "nodes": {},
         "detection_systems": {}
       }
     }

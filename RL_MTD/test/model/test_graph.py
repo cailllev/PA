@@ -23,11 +23,11 @@ def visit_node(current, goal):
             return visit_node(next_node, goal)
 
 
-class MyTestCase(unittest.TestCase):
+class GraphTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.graph = g.Graph("simple_webservice", "simple")
+        self.graph = g.Graph("simple_webservice", "professional")
         self.faulty_graph = g.Graph("faulty_graph", "simple")
 
     def test_start_to_end(self):
@@ -76,6 +76,12 @@ class MyTestCase(unittest.TestCase):
 
         for detection_system in self.graph.get_detection_systems():
             self.assertTrue(isinstance(detection_system.get_prob(), numbers.Number))
+
+    def test_null_graph(self):
+        graph = g.get_null_graph()
+        self.assertEqual(len(graph.get_nodes()), 0)
+        self.assertEqual(len(graph.get_detection_systems()), 0)
+        self.assertEqual(graph.get_obs_range(), 1)
 
 
 if __name__ == "__main__":

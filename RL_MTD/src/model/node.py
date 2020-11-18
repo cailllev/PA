@@ -4,6 +4,11 @@ from typing import Union
 from typing import Dict
 
 
+def get_null_node():
+    # type: () -> Node
+    return Node("null", 0, None, {}, 0, False)
+
+
 class Node:
     def __init__(self, name, index, prev_node, next_nodes, progress, is_honeypot):
         # type: (str, int, Union["Node", None], dict, int, bool) -> None

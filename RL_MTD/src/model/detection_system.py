@@ -3,9 +3,13 @@ import src.model.node as n
 from typing import Dict, List
 
 
+def get_null_detection_system():
+    return DetectionSystem("null", {"init": 0, "de": 0}, n.get_null_node(), [n.get_null_node()])
+
+
 class DetectionSystem:
     def __init__(self, name, probs, reset_node, after_nodes):
-        # type: (str, Dict[str, float], "n.Node", List[str]) -> None
+        # type: (str, Dict[str, float], n.Node, List[str]) -> None
         """
         :param name: the name of this system
         :param probs: the prob of catching attacker and its change after catching attacker
@@ -35,7 +39,7 @@ class DetectionSystem:
         self._p = self._p0
 
     def caught_attacker(self):
-        # type: () -> "n.Node"
+        # type: () -> n.Node
         """
         updates the chance of catching attacker again next step and returns the node the attacker is set to
         :return: the new pos of the attacker

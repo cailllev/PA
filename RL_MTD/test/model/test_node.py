@@ -38,6 +38,16 @@ class NodeTest(unittest.TestCase):
         self.assertEqual(new_probs[self.next_node], 0.80)
         self.assertEqual(new_probs[self.another_next_node], 0.70)
 
+    def test_null_node(self):
+        node = n.get_null_node()
+        self.assertEqual(node.get_name(), "null")
+        self.assertEqual(node.get_index(), 0)
+        self.assertEqual(node.get_prev(), None)
+        self.assertEqual(len(node.get_probs()), 0)
+        self.assertEqual(node.get_detection_system(), None)
+        self.assertEqual(node.get_progress_level(), 0)
+        node.reset()
+
 
 if __name__ == '__main__':
     unittest.main()
