@@ -4,7 +4,7 @@ Simulations per Type:      20
 Steps per Simulation:      5000
 ---------------------------------------------------------------------
 Only Nodes:                False
-Only Detection Systems:    True
+Only Detection Systems:    False
 Nodes Pause:               1
 Detection Systems Pause:   1
 ---------------------------------------------------------------------
@@ -14,51 +14,51 @@ Algorithm not yet trained: PPO
 *********************************************************************
 Simulation Type:          Defender2000
 ---------------------------------------------------------------------
-Avg steps:                84.7
-Avg reward/step:          -25.74
-Avg null action ratio:    [1.0, 0.261]
+Avg steps:                128.95
+Avg reward/step:          -26.678
+Avg null action ratio:    [0.102, 0.279]
 Avg invalid actions:      [0.0, 0.0]
 
 Min steps:                6
-Max steps:                413
+Max steps:                460
 
 Defender wins:            0
 Attacker wins:            20
 
-Steps each sim:           [106, 413, 93, 89, 6, 28, 74, 68, 79, 12, 180, 42, 35, 27, 42, 72, 97, 131, 73, 27]
-Reward each sim:          [-2698, -8082, -2690, -2240, -608, -1090, -2254, -1794, -2112, -612, -4822, -1316, -956, -938, -1206, -1812, -2648, -3236, -1504, -986]
+Steps each sim:           [112, 14, 460, 64, 169, 111, 51, 168, 9, 63, 80, 6, 77, 162, 385, 139, 217, 183, 49, 60]
+Reward each sim:          [-3129, -740, -11496, -1798, -4287, -2746, -1508, -4340, -698, -1975, -2277, -631, -2068, -4059, -9651, -3832, -5705, -4061, -1716, -2086]
 *********************************************************************
 Simulation Type:          Random
 ---------------------------------------------------------------------
-Avg steps:                76.35
-Avg reward/step:          -30.982
-Avg null action ratio:    [1.0, 0.342]
+Avg steps:                131.45
+Avg reward/step:          -29.404
+Avg null action ratio:    [0.128, 0.316]
 Avg invalid actions:      [0.0, 0.0]
 
-Min steps:                22
-Max steps:                227
+Min steps:                28
+Max steps:                348
 
 Defender wins:            0
 Attacker wins:            20
 
-Steps each sim:           [98, 43, 227, 71, 86, 82, 39, 84, 77, 60, 79, 137, 35, 35, 54, 53, 22, 61, 150, 34]
-Reward each sim:          [-3380, -1108, -6852, -1596, -2898, -2106, -1352, -2808, -2102, -1784, -2702, -3982, -1488, -1796, -2372, -1722, -724, -1194, -4300, -1044]
+Steps each sim:           [109, 102, 104, 104, 31, 81, 300, 135, 213, 83, 157, 173, 28, 280, 348, 90, 32, 53, 54, 152]
+Reward each sim:          [-3413, -2724, -2903, -3005, -1530, -2630, -7251, -4080, -6183, -2929, -4605, -5247, -1149, -6948, -10136, -3018, -1037, -1797, -2254, -4465]
 *********************************************************************
 Simulation Type:          Static
 ---------------------------------------------------------------------
-Avg steps:                20.55
-Avg reward/step:          -49.392
+Avg steps:                20.85
+Avg reward/step:          -53.717
 Avg null action ratio:    [1.0, 1.0]
 Avg invalid actions:      [0.0, 0.0]
 
-Min steps:                7
-Max steps:                36
+Min steps:                5
+Max steps:                49
 
 Defender wins:            0
 Attacker wins:            20
 
-Steps each sim:           [17, 22, 11, 28, 24, 33, 14, 9, 23, 8, 26, 14, 11, 24, 36, 7, 26, 32, 17, 29]
-Reward each sim:          [-1250, -1550, -600, -1200, -900, -1450, -750, -650, -850, -600, -950, -850, -700, -1450, -1100, -600, -1350, -1250, -1000, -1250]
+Steps each sim:           [15, 24, 15, 42, 32, 33, 14, 11, 8, 22, 49, 16, 45, 15, 18, 7, 5, 14, 25, 7]
+Reward each sim:          [-700, -1100, -1000, -1850, -1400, -1800, -1100, -900, -650, -1300, -2050, -950, -1700, -800, -1000, -650, -600, -950, -1250, -650]
 *********************************************************************
-Defender2000 is the most effective algorithm with 84.7 avg steps.
-Defender2000 is the most efficient algorithm with -25.74 avg reward/step.
+Random is the most effective algorithm with 131.45 avg steps.
+Defender2000 is the most efficient algorithm with -26.678 avg reward/step.
