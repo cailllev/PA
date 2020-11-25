@@ -1,0 +1,15 @@
+All
+---------------
+
+
+
+Students
+---------------
+-finalize parts of the report. More tables, more pictures, more differentiated sources, more sub-chapters.
+-Beginn implementing an abbreviation directory and a documentation/manual for your code.
+
+
+Supervisors
+---------------
+-provide material as you see fit.
+-provide alternate modelling-idea as you see fit.
