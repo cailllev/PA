@@ -197,7 +197,8 @@ class MTDEnv(gym.Env):
             invalid_action[1] = 1
 
         # https://github.com/hill-a/stable-baselines/issues/108
-        # TL;DR: if there is a invalid action, penalize it heavily and do nothing - but only while learning, not in eval
+        # TL;DR: if there is a invalid action, penalize it and do nothing
+        # only penalize in learning, not in simulating
         if invalid_action[0]:
             reward += rewards["invalid_action"]
             self._invalid_action_counter[0] += 1

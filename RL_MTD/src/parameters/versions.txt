@@ -58,7 +58,7 @@ rewards
   "restart_node": -5,
   "progression": -50,
   "attacker_wins": -100,
-  "invalid_action": -10000
+  "invalid_action": -50
 
   "bias_per_step": 60
 ```

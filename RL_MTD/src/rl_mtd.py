@@ -96,9 +96,9 @@ import math
 #       * no support from stable_baselines plus not useful because agent cannot predict the next state most of the time
 
 
-def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=100, simulate_only_one=False,
-         graph="simple_webservice", attack="professional", only_nodes=False, only_detection_systems=False,
-         nodes_pause=1, detection_systems_pause=1):
+def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, simulations_count=20,
+         simulate_only_one=False, graph="simple_webservice", attack="professional",
+         only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
     # type: (str, bool, int, int, bool, str, str, bool, bool, int, int) -> None
     """
     simulates (and trains) rl agents and own agents (defender2000, random and static) on MTDEnv and writes the results 
@@ -117,6 +117,8 @@ def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=1
     """
 
     print("\nConfig:")
+    print(f"Graph Name:                {graph}")
+    print(f"Attack Name:               {attack}")
     print(f"Only Nodes:                {only_nodes}")
     print(f"Only Detection Systems:    {only_detection_systems}")
     print(f"Nodes Pause:               {nodes_pause}")
@@ -178,7 +180,7 @@ def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=1
 
     def timestamp_to_datetime(stamp):
         # type: (float) -> str
-        return datetime.fromtimestamp(stamp).strftime('%I:%M:%S')
+        return datetime.fromtimestamp(stamp).strftime('%A %H:%M:%S')
 
     # ------------------------ learning ------------------------ #
     if learn:
@@ -288,8 +290,8 @@ def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=1
         nonlocal results
         results["steps"].append(env.get_counter())
 
-        penalty = env.get_invalid_actions_penalty()
         reward = env.get_total_reward()
+        penalty = env.get_invalid_actions_penalty()
         results["total_reward"].append(reward - penalty)
 
         null_actions_count = env.get_null_actions_count()
@@ -372,6 +374,8 @@ def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=1
     f.write(f"Simulations per Type:      {simulations_count}\n")
     f.write(f"Steps per Simulation:      {steps_per_sim}\n")
     f.write("---------------------------------------------------------------------\n")
+    f.write(f"Graph Name:                {graph}\n")
+    f.write(f"Attack Name:               {attack}\n")
     f.write(f"Only Nodes:                {only_nodes}\n")
     f.write(f"Only Detection Systems:    {only_detection_systems}\n")
     f.write(f"Nodes Pause:               {nodes_pause}\n")
@@ -442,9 +446,9 @@ def main(parameters_folder, learn=True, learn_steps=10 ** 4, simulations_count=1
 
 if __name__ == "__main__":
     main("parameters/tests/",
-         learn=False,
-         learn_steps=10 ** 3,
-         simulations_count=10,
+         learn=True,
+         learn_steps=10 ** 5,
+         simulations_count=200,
          only_nodes=False,
          only_detection_systems=False,
          nodes_pause=1,

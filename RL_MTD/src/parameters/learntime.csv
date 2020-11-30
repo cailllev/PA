@@ -1,3 +1,3 @@
-Algo,   10^3,           10^4,       10^5,               10^6,                   10^7
-A2C,    0.7s...1.1s,    7s...11s,   1min10s...1min50s,  11min40s...18min20s,    1h56min...3h3min
-PPO,    1.3s...2.0s,    13s...20s,  2min10s...3min20s,  21min40s...33min20s,    3h36min...5h33min
+Algo,   10^3,           10^4,       10^5,               10^6,                   10^7,               10^8
+A2C,    0.7s...1.1s,    7s...11s,   1min10s...1min50s,  11min40s...18min20s,    1h56min...3h3min,   25h
+PPO,    1.3s...2.0s,    13s...20s,  2min10s...3min20s,  21min40s...33min20s,    3h36min...5h33min,  50h

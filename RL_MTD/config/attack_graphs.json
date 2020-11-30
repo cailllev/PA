@@ -157,7 +157,7 @@
           "de_PS": 0.5
         }
       },
-      "scrip_kiddies": {
+      "script_kiddies": {
         "nodes": {
           "p_auth_0": 0.3,
           "dp_auth": 0.05,
@@ -198,7 +198,7 @@
       "restart_node": -5,
       "progression": -50,
       "attacker_wins": -100,
-      "invalid_action": -10000,
+      "invalid_action": -50,
 
       "bias_per_step": 60
     },
