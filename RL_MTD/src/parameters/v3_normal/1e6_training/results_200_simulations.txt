@@ -3,6 +3,8 @@ Starting Simulation Types: A2C, PPO, Defender2000, Random, Static
 Simulations per Type:      200
 Steps per Simulation:      5000
 ---------------------------------------------------------------------
+Graph Name:                simple_webservice
+Attack Name:               professional
 Only Nodes:                False
 Only Detection Systems:    False
 Nodes Pause:               1
