@@ -15,8 +15,10 @@ for i in range(3, 8):
     mtd.main(path,
              learn=learn,
              learn_steps=10 ** i,
-             simulations_count=200,
+             graph="simple_webservice",
+             attack="professional",
+             simulations_count=20,
              only_nodes=False,
              only_detection_systems=False,
-             nodes_pause=6,
-             detection_systems_pause=3)
+             nodes_pause=1,
+             detection_systems_pause=1)

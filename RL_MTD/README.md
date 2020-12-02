@@ -1,9 +1,7 @@
 # Setup Project
 ## requirements
-- python version
-```
-3.8
-```
+- python version 3.8
+  - everything tested with 3.8.5
 - pip installs
 ```
 pip install torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
@@ -11,12 +9,12 @@ pip install stable_baselines3
 pip install gym
 ```
 ## running given code 
-1. download repo from https://github.zhaw.ch/cailllev/PA_MTD/
-2. run config
-    - run just once (includes ~5min of training and then simulate all algos: ```A2C PPO Defender2000 Random Static```:
-        - `` src.rl_mtd `` => run is configurable at main call at line 427 
+1. download this repo (https://github.zhaw.ch/cailllev/PA_MTD/) and go to folder RL_MTD
+2. possible runs...
+    - run just once (default config includes ~5min of training and then simulates all algos: ```A2C PPO Defender2000 Random Static```:
+        - `` src.rl_mtd `` => run can be configured at main call at line 447 
     - run multiple times with different lengths of training sessions (1sec ... 4h):
-        - `` src.runner `` => runs are configurable at main call at line 15
+        - `` src.runner `` => runs can be configured at main call at line 15
     - default output of `` src.rl_mtd ``
 ```
 Config:
@@ -173,13 +171,13 @@ Process finished with exit code 0
     - detection systems: what detection systems are in place
     - attacks: how likely an attacker gains control of such a service
     - hints
-        - under nodes and detection systems are the name of probabilities, in attacks are the names and the 
+        - under "nodes" and "detection systems" are the names of probabilities, in "attacks" are the names and the 
         corresponding values of probabilities
-        - all names of probabilities in nodes and detection systems have to be listed in attacks, all probabilities in 
-        attacks have to be used in nodes or detection systems
+        - all names of probabilities in "nodes" and "detection systems" have to be listed in "attacks", all probabilities in 
+        "attacks" have to be used in "nodes" or "detection systems"
 3. to check if a configuration can be parsed, do:
     - run ``` src.model.graph ```
-    - if no errors, the network can be parsed; but that does not guarenteed the network makes sense
-    - if there are errors (assertations fail), the way to fix the problem should be self self-explanatory
+    - if no errors, the network can be parsed; but that does not guarantee the network makes sense
+    - if there are errors (assertations fail), the way to fix the problem is described and it should be self self-explanatory
 4. now run:
     - ``` src.rl_mtd.main(..., graph=<own_graph_name>, attack=<own_attack_name>, ...)```
