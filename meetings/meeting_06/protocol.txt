@@ -5,7 +5,7 @@ All
 
 Students
 ---------------
--get more feedback on the modell.
+-get more feedback on the model.
 -work according to plan.
 
 

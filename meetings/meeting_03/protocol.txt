@@ -1,6 +1,6 @@
 All
 ---------------
--the report will be in german.
+-the report will be in German.
 
 
 Students

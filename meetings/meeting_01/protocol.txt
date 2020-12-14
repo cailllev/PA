@@ -1,18 +1,18 @@
 All
 ---------------
--meetings will now have a standard timeslot on wednesday 8.30 - 9.30.
+-meetings will now have a standard timeslot on Wednesday 8.30 - 9.30.
 
 
 Students
 ---------------
 -get a basic overview regarding different MTD approaches and reinforcements learning and "present" them next week.
 -create a repository for information exchange between students and supervisors.
--create a timeplan that can be discussed next week.
+-create a time plan that can be discussed next week.
 -decide what tool to use regarding the paperwork of the PA (Office, Latex).
--link papers and texts in the repisitory.
+-link papers and texts in the repository.
 -create meeting protocols and decision protocols.
 
 
 Supervisors
 ---------------
--take a look at the repository, papers, texts and provide own material as you see fit.
+-look at the repository, papers, texts and provide own material as you see fit.

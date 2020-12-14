@@ -1,15 +1,15 @@
 All
 ---------------
--all tasks in the protocolls will now be meant to be completed until the next week/the next protocoll except a date is statet.
--we decided to use office as tool for the main paperwork of the PA
+-all tasks in the protocols will now be meant to be completed until the next week/the next protocol except a date is stated.
+-we decided to use office as tool for the main paperwork of the PA.
 
 
 Students
 ---------------
--get familiar with zotero or mendeley
--create teams channel for our paper
--get a better overview over reinforcement learning
--work according to plan
+-get familiar with Zotero or Mendeley.
+-create Teams channel for our paper.
+-get a better overview over reinforcement learning.
+-work according to plan.
 
 
 Supervisors

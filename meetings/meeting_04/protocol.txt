@@ -1,6 +1,6 @@
 All
 ---------------
--we will use a attack-modell to abstract the attack on a network. in this "framework" we will test machine-learning based mtds.
+-we will use an attack-model to abstract the attack on a network. in this "framework" we will test machine-learning based MTDs.
 
 
 Students
