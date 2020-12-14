@@ -104,12 +104,12 @@
       }
     },
     "detection_systems": {
-      "IDS": {
+      "IPS": {
         "after_nodes": ["internet", "authorizer", "honeypot_authorizer", "planner", "honeypot_planner"],
         "reset_node": "internet",
         "probs": {
-          "init": "p_IDS_0",
-          "de": "de_IDS"
+          "init": "p_IPS_0",
+          "de": "de_IPS"
         }
       },
       "PS": {
@@ -151,8 +151,8 @@
           "dp_e": 0
         },
         "detection_systems": {
-          "p_IDS_0": 0.9911,
-          "de_IDS": 0.5,
+          "p_IPS_0": 0.9911,
+          "de_IPS": 0.5,
           "p_PS_0": 0.5,
           "de_PS": 0.5
         }
@@ -186,8 +186,8 @@
           "dp_e": 0
         },
         "detection_systems": {
-          "p_IDS_0": 0.9955,
-          "de_IDS": 0.25,
+          "p_IPS_0": 0.9955,
+          "de_IPS": 0.25,
           "p_PS_0": 0.75,
           "de_PS": 0.25
         }

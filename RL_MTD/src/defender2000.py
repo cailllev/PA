@@ -23,7 +23,7 @@ class Defender2000:
         # type: (bool, bool, int, int) -> None
         """
         Own implementation of an agent for given mtd problem. Actions are taken in 2 scenarios:
-        1. Detection system catches an attacker -> switch IDS, restart nodes up to incident point, one restart per step
+        1. Detection system catches an attacker -> switch IPS, restart nodes up to incident point, one restart per step
             a) Only does planned restarts and switched if valid (i.e. not in pause), else do a random valid one
             b) If not all actions done but new and deeper incident point detected, remove all old actions and create new
                  actions for the new incident point
@@ -55,7 +55,7 @@ class Defender2000:
         # type: (int) -> None
         """
         sets the next actions, if attacker e.g. is caught at progress lvl 3 (and kicked out) do the following:
-        1. switch the Intrusion Detection System (IDS) so the same attack will most likely fail and the current node
+        1. switch the Intrusion Detection System (IPS) so the same attack will most likely fail and the current node
         2. restart the nodes before current node, -> 2, 1
         actions => [[3,1],[2,0],[1,0]]
         :param obs: the compromised node the attacker was caught on

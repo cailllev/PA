@@ -11,7 +11,7 @@ class DetectionSystemTest(unittest.TestCase):
         self.node = n.Node("after", 1, self.start_node, {}, 1, False)
         self.honeypot = n.Node("honeypot", 2, self.node, {self.node: {"init": 0.4, "dt": 0.1}}, -1, True)
 
-        self.detection_system = d.DetectionSystem("IDS", {"init": 0.8, "de": 0.5}, self.start_node, ["start", "after"])
+        self.detection_system = d.DetectionSystem("IPS", {"init": 0.8, "de": 0.5}, self.start_node, ["start", "after"])
 
         self.node.set_detection_system(self.detection_system)
         self.honeypot.set_detection_system(self.detection_system)

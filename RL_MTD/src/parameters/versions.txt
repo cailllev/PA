@@ -6,7 +6,7 @@ Below are the summaries for each version: <p>
 - first experiences with RL agents
 - simulated RL methods: A2C, ACKTR, PP02
 - 10^7 simulated steps to learn, still all RL agents are only marginally better than random
-- although without switching of IDS (BUG, at the time undetected), random is way better than static
+- although without switching of IPS (BUG, at the time undetected), random is way better than static
   - random: avg steps 53, avg reward -23; static: avg steps 4.1, avg reward: -50
 ```
 rewards
@@ -21,7 +21,7 @@ rewards
 ```
 
 # v2
-- major bug fix, switch IDS was not possible
+- major bug fix, switch IPS was not possible
 - add bias per step to encurrage long simulations (+30)
 - new defense method added (defender2000), trying to find a good policy / rules by hand 
   - => avg steps: 135 and avg reward: 16.0 ==> quite bad algorithm
