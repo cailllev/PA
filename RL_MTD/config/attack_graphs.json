@@ -103,7 +103,7 @@
         "progress": 4
       }
     },
-    "detection_systems": {
+    "prevention_systems": {
       "IPS": {
         "after_nodes": ["internet", "authorizer", "honeypot_authorizer", "planner", "honeypot_planner"],
         "reset_node": "internet",
@@ -112,12 +112,12 @@
           "de": "de_IPS"
         }
       },
-      "PS": {
+      "DLPS": {
         "after_nodes": ["DB1", "DB2", "DB3"],
         "reset_node": "internet",
         "probs": {
-          "init": "p_PS_0",
-          "de": "de_PS"
+          "init": "p_DLPS_0",
+          "de": "de_DLPS"
         }
       }
     },
@@ -150,11 +150,11 @@
           "p_e_0": 1,
           "dp_e": 0
         },
-        "detection_systems": {
+        "prevention_systems": {
           "p_IPS_0": 0.9911,
           "de_IPS": 0.5,
-          "p_PS_0": 0.5,
-          "de_PS": 0.5
+          "p_DLPS_0": 0.5,
+          "de_DLPS": 0.5
         }
       },
       "script_kiddies": {
@@ -185,16 +185,16 @@
           "p_e_0": 1,
           "dp_e": 0
         },
-        "detection_systems": {
+        "prevention_systems": {
           "p_IPS_0": 0.9955,
           "de_IPS": 0.25,
-          "p_PS_0": 0.75,
-          "de_PS": 0.25
+          "p_DLPS_0": 0.75,
+          "de_DLPS": 0.25
         }
       }
     },
     "rewards": {
-      "switch_detection_system": -2,
+      "switch_prevention_system": -2,
       "restart_node": -5,
       "progression": -50,
       "attacker_wins": -100,
@@ -232,7 +232,7 @@
         "progress": 2
       }
     },
-    "detection_systems": {},
+    "prevention_systems": {},
     "attacks": {
       "simple": {
         "nodes": {
@@ -242,17 +242,17 @@
           "p20": 1,
           "dp2": 0
         },
-        "detection_systems": {}
+        "prevention_systems": {}
       }
     }
   },
   "null": {
     "nodes": {},
-    "detection_systems": {},
+    "prevention_systems": {},
     "attacks": {
       "null": {
         "nodes": {},
-        "detection_systems": {}
+        "prevention_systems": {}
       }
     }
   }

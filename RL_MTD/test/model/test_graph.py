@@ -74,13 +74,13 @@ class GraphTest(unittest.TestCase):
                 for prob in next_nodes[next_node]:
                     self.assertTrue(isinstance(next_nodes[next_node][prob], numbers.Number))
 
-        for detection_system in self.graph.get_detection_systems():
-            self.assertTrue(isinstance(detection_system.get_prob(), numbers.Number))
+        for prevention_system in self.graph.get_prevention_systems():
+            self.assertTrue(isinstance(prevention_system.get_prob(), numbers.Number))
 
     def test_null_graph(self):
         graph = g.get_null_graph()
         self.assertEqual(len(graph.get_nodes()), 0)
-        self.assertEqual(len(graph.get_detection_systems()), 0)
+        self.assertEqual(len(graph.get_prevention_systems()), 0)
         self.assertEqual(graph.get_obs_range(), 1)
 
 

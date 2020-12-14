@@ -1,4 +1,4 @@
-import src.model.detection_system as d
+import src.model.prevention_system as p
 
 from typing import Union
 from typing import Dict
@@ -24,7 +24,7 @@ class Node:
         self._index = index
         self._prev = prev_node
         self._next = next_nodes
-        self._detection_system = None
+        self._prevention_system = None
         self._progress = progress
         self._is_honeypot = is_honeypot
 
@@ -82,13 +82,13 @@ class Node:
         """
         self._next[next_node]["current"] = 1
 
-    def set_detection_system(self, detection_system):
-        # type: (d.DetectionSystem) -> None
-        self._detection_system = detection_system
+    def set_prevention_system(self, prevention_system):
+        # type: (p.PreventionSystem) -> None
+        self._prevention_system = prevention_system
 
-    def get_detection_system(self):
-        # type: () -> d.DetectionSystem
-        return self._detection_system
+    def get_prevention_system(self):
+        # type: () -> p.PreventionSystem
+        return self._prevention_system
 
     def get_progress_level(self):
         # type: () -> int

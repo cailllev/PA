@@ -3,59 +3,59 @@ from copy import copy
 import src.env.mtd_env as env_constants
 
 
-def get_detection_system_index_from_obs(obs):
+def get_prevention_system_action_index_from_obs(obs):
     """
-    gets an observation and determines which detection system caugth the attacker
+    gets an observation and determines which prevention system caugth the attacker
     :param obs: the index of the node the attacker was caught on
-    :return: the index of the corresponding detection system
+    :return: the index of the action to swap the corresponding prevention system
     """
-    detection_system = env_constants.nodes[obs].get_detection_system()
+    prevention_system = env_constants.nodes[obs].get_prevention_system()
 
-    for i in range(len(env_constants.detection_systems)):
-        if detection_system == env_constants.detection_systems[i]:
-            return i
+    for i in range(len(env_constants.prevention_systems)):
+        if prevention_system == env_constants.prevention_systems[i]:
+            return i+1
 
-    raise Exception(f"No detection system found for node {env_constants.nodes[obs].get_name()}.")
+    raise Exception(f"No prevention system found for node {env_constants.nodes[obs].get_name()}.")
 
 
 class Defender2000:
-    def __init__(self, only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
+    def __init__(self, only_nodes=False, only_prevention_systems=False, nodes_pause=1, prevention_systems_pause=1):
         # type: (bool, bool, int, int) -> None
         """
         Own implementation of an agent for given mtd problem. Actions are taken in 2 scenarios:
-        1. Detection system catches an attacker -> switch IPS, restart nodes up to incident point, one restart per step
+        1. Prevention system catches an attacker -> switch IPS, restart nodes up to incident point, one restart per step
             a) Only does planned restarts and switched if valid (i.e. not in pause), else do a random valid one
             b) If not all actions done but new and deeper incident point detected, remove all old actions and create new
                  actions for the new incident point
-        2. Randomly restart a node and / or switch a detection system
+        2. Randomly restart a node and / or switch a prevention system
         :param only_nodes: only nodes are restartable
-        :param only_detection_systems: only detection systems are switchable
+        :param only_prevention_systems: only prevention systems are switchable
         :param nodes_pause: how long between restarts of the same node (1 = every step possible)
-        :param detection_systems_pause: how long between switches of the same detection system (1 = every step possible)
+        :param prevention_systems_pause: how long between switches of the same prevention system (1 = every step possible)
         """
         self._next_actions = []
 
         if not only_nodes:
-            self._detection_systems_count = env_constants.get_detection_systems_count()
+            self._prevention_systems_count = env_constants.get_prevention_systems_count()
         else:
-            self._detection_systems_count = 0
+            self._prevention_systems_count = 0
 
-        if not only_detection_systems:
+        if not only_prevention_systems:
             self._nodes_count = env_constants.get_restartable_nodes_count()
         else:
             self._nodes_count = 0
 
         self._nodes_pause = nodes_pause
-        self._detection_systems_pause = detection_systems_pause
+        self._prevention_systems_pause = prevention_systems_pause
 
-        self._locked_nodes, self._locked_detection_systems = \
-            env_constants.create_locked_lists(self._nodes_count + 1, self._detection_systems_count + 1)
+        self._locked_nodes, self._locked_prevention_systems = \
+            env_constants.create_locked_lists(self._nodes_count + 1, self._prevention_systems_count + 1)
 
     def _set_next_actions(self, obs):
         # type: (int) -> None
         """
         sets the next actions, if attacker e.g. is caught at progress lvl 3 (and kicked out) do the following:
-        1. switch the Intrusion Detection System (IPS) so the same attack will most likely fail and the current node
+        1. switch the Intrusion Prevention System (IPS) so the same attack will most likely fail and the current node
         2. restart the nodes before current node, -> 2, 1
         actions => [[3,1],[2,0],[1,0]]
         :param obs: the compromised node the attacker was caught on
@@ -71,9 +71,9 @@ class Defender2000:
         if len(self._next_actions) == 0:
             self._next_actions = [[0, 0]]
 
-        if self._detection_systems_count:
-            ds_index = get_detection_system_index_from_obs(obs)
-            self._next_actions[0][1] = ds_index + 1
+        if self._prevention_systems_count:
+            ds_index = get_prevention_system_action_index_from_obs(obs)
+            self._next_actions[0][1] = ds_index
 
     def _get_next_action(self):
         # type: () -> (int, int)
@@ -94,12 +94,12 @@ class Defender2000:
             else:
                 action[0] = env_constants.choose_random_from_list(self._locked_nodes, self._nodes_pause)
 
-            if action[1] > 0 and self._locked_detection_systems[action[1]] == 0:
-                self._locked_detection_systems[action[1]] = self._detection_systems_pause
+            if action[1] > 0 and self._locked_prevention_systems[action[1]] == 0:
+                self._locked_prevention_systems[action[1]] = self._prevention_systems_pause
                 self._shift_left(1)
             else:
-                action[1] = env_constants.choose_random_from_list(self._locked_detection_systems,
-                                                                  self._detection_systems_pause)
+                action[1] = env_constants.choose_random_from_list(self._locked_prevention_systems,
+                                                                  self._prevention_systems_pause)
 
             return action
 
@@ -110,10 +110,10 @@ class Defender2000:
             if self._nodes_count:
                 action[0] = env_constants.choose_random_from_list(self._locked_nodes, self._nodes_pause)
 
-            # same with detection systems
-            if self._detection_systems_count:
-                action[1] = env_constants.choose_random_from_list(self._locked_detection_systems,
-                                                                  self._detection_systems_pause)
+            # same with prevention systems
+            if self._prevention_systems_count:
+                action[1] = env_constants.choose_random_from_list(self._locked_prevention_systems,
+                                                                  self._prevention_systems_pause)
 
             return action
 
@@ -134,6 +134,14 @@ class Defender2000:
             if self._next_actions[-1] == [0, 0]:
                 self._next_actions = self._next_actions[0:-1]
 
+    def reset(self):
+        # type: () -> None
+        """
+        resets all locked lists, otherwise no other data is stored in the defender2000
+        """
+        self._locked_nodes, self._locked_prevention_systems = \
+            env_constants.create_locked_lists(self._nodes_count + 1, self._prevention_systems_count + 1)
+
     def predict(self, obs):
         # type: (int) -> (int, int)
         """
@@ -142,9 +150,9 @@ class Defender2000:
         :param obs: where the attacker is (or 0 is unknown)
         :return: an action
         """
-        # removes one "pause step" in the locked nodes and detection systems, i.e. locked_nodes: [3,1,1,0] -> [2,0,0,0]
+        # removes one "pause step" in the locked nodes and prevention systems, i.e. locked_nodes: [3,1,1,0] -> [2,0,0,0]
         env_constants.subtract_one(self._locked_nodes)
-        env_constants.subtract_one(self._locked_detection_systems)
+        env_constants.subtract_one(self._locked_prevention_systems)
 
         if obs > 0:
             if self._next_actions:

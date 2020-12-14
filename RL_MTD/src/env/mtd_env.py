@@ -4,7 +4,7 @@ import random
 
 import src.model.graph as g
 import src.model.node as n
-import src.model.detection_system as d
+import src.model.prevention_system as p
 
 from typing import List, Tuple
 
@@ -16,7 +16,7 @@ env_config_init = False
 
 nodes = [n.get_null_node()]
 graph = g.get_null_graph()
-detection_systems = d.get_null_detection_system()
+prevention_systems = p.get_null_prevention_system()
 
 start_node = end_node = n.get_null_node()
 
@@ -27,7 +27,7 @@ steps_per_simulation = 0
 
 def set_config(graph_name, attack_name):
     # type: (str, str) -> None
-    global env_config_init, nodes, graph, detection_systems, start_node, end_node, rewards, steps_per_simulation
+    global env_config_init, nodes, graph, prevention_systems, start_node, end_node, rewards, steps_per_simulation
 
     env_config_init = True
 
@@ -35,7 +35,7 @@ def set_config(graph_name, attack_name):
     graph_name = graph_name
     graph = g.Graph(graph_name, attack_name)
     nodes = graph.get_nodes()
-    detection_systems = graph.get_detection_systems()
+    prevention_systems = graph.get_prevention_systems()
 
     start_node = nodes[0]
     end_node = nodes[-1]
@@ -60,9 +60,9 @@ def get_restartable_nodes_count():
     return len(nodes) - 2
 
 
-def get_detection_systems_count():
+def get_prevention_systems_count():
     # type: () -> int
-    return len(detection_systems)
+    return len(prevention_systems)
 
 
 def subtract_one(lst):
@@ -71,9 +71,9 @@ def subtract_one(lst):
         lst[i] = max(lst[i] - 1, 0)
 
 
-def create_locked_lists(nodes_actions, detection_system_actions):
+def create_locked_lists(nodes_actions, prevention_system_actions):
     # type: (int, int) -> List[list, list]
-    return [[0] * nodes_actions, [0] * detection_system_actions]
+    return [[0] * nodes_actions, [0] * prevention_system_actions]
 
 
 def choose_random_from_list(lst, pause):
@@ -105,14 +105,14 @@ def choose_random_from_list(lst, pause):
 
 
 class MTDEnv(gym.Env):
-    def __init__(self, only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
+    def __init__(self, only_nodes=False, only_prevention_systems=False, nodes_pause=1, prevention_systems_pause=1):
         # type: (bool, bool, int, int) -> None
         """
         own enviroment to simulate behavior of a MTD network
-        :param only_nodes: only able to restart nodes, detection systems are fixed
-        :param only_detection_systems: only able to switch detection systems, nodes are fixed
+        :param only_nodes: only able to restart nodes, prevention systems are fixed
+        :param only_prevention_systems: only able to switch prevention systems, nodes are fixed
         :param nodes_pause: pause between same node restarts (1=every step possible)
-        :param detection_systems_pause: pause between same detection system switches (1=every step possible)
+        :param prevention_systems_pause: pause between same prevention system switches (1=every step possible)
         """
         if not env_config_init:
             raise Exception("mtd_env module is not configured, call env.set_config() first")
@@ -133,40 +133,40 @@ class MTDEnv(gym.Env):
         # stable baselines
         self._only_nodes = only_nodes
         if only_nodes:
-            detection_systems_actions = 1
+            prevention_systems_actions = 1
         else:
-            detection_systems_actions = get_detection_systems_count() + 1
+            prevention_systems_actions = get_prevention_systems_count() + 1
 
-        self._only_detection_systems = only_detection_systems
-        if only_detection_systems:
+        self._only_prevention_systems = only_prevention_systems
+        if only_prevention_systems:
             nodes_actions = 1
         else:
             nodes_actions = get_restartable_nodes_count() + 1
 
-        self.action_space = gym.spaces.MultiDiscrete([nodes_actions, detection_systems_actions])
+        self.action_space = gym.spaces.MultiDiscrete([nodes_actions, prevention_systems_actions])
         self.observation_space = gym.spaces.Discrete(graph.get_obs_range())
 
-        self._locked_nodes, self._locked_detection_systems = create_locked_lists(nodes_actions,
-                                                                                 detection_systems_actions)
+        self._locked_nodes, self._locked_prevention_systems = create_locked_lists(nodes_actions,
+                                                                                 prevention_systems_actions)
         self._nodes_pause = nodes_pause
-        self._detection_systems_pause = detection_systems_pause
+        self._prevention_systems_pause = prevention_systems_pause
 
     # ------------------------- GYM ------------------------- #
     def reset(self):
         # type: () -> int
         graph.reset()
-        self.__init__(self._only_nodes, self._only_detection_systems, self._nodes_pause, self._detection_systems_pause)
+        self.__init__(self._only_nodes, self._only_prevention_systems, self._nodes_pause, self._prevention_systems_pause)
         return 0
 
     def step(self, action):
         # type: (List[int, int]) -> (int, int, bool, dict)
         """
         evaluate the given action, then simulate one time step for the attacker
-        action in Discrete: 0...restartable_nodes+detection_systems --> parse to MultiDiscrete
-        action in MultiDiscrete: [0...restartable_nodes, 0...detection_systems]
+        action in Discrete: 0...restartable_nodes+prevention_systems --> parse to MultiDiscrete
+        action in MultiDiscrete: [0...restartable_nodes, 0...prevention_systems]
 
         action[0] == 0: -> no action, action[0] == 1 -> restart node[1], ..., action[0] == n -> restart node[n]
-        action[1] == 0: -> no action, action[1] == 1 -> restart detection system[0], ...
+        action[1] == 0: -> no action, action[1] == 1 -> restart prevention system[0], ...
 
         :param action: the action from the RL agent, what to restart and what to switch
         :return: obs, reward, done, info
@@ -178,22 +178,22 @@ class MTDEnv(gym.Env):
         self._counter += 1
 
         subtract_one(self._locked_nodes)
-        subtract_one(self._locked_detection_systems)
+        subtract_one(self._locked_prevention_systems)
 
         # --------------- parse action --------------- #
         restart_node = action[0]
-        switch_detection_system = action[1]
+        switch_prevention_system = action[1]
 
         # check if action is invalid
         invalid_action = [0, 0]
-        if self._only_detection_systems and restart_node:
+        if self._only_prevention_systems and restart_node:
             invalid_action[0] = 1
         elif self._locked_nodes[restart_node] > 0:
             invalid_action[0] = 1
 
-        if self._only_nodes and switch_detection_system:
+        if self._only_nodes and switch_prevention_system:
             invalid_action[1] = 1
-        elif self._locked_detection_systems[switch_detection_system] > 0:
+        elif self._locked_prevention_systems[switch_prevention_system] > 0:
             invalid_action[1] = 1
 
         # https://github.com/hill-a/stable-baselines/issues/108
@@ -207,9 +207,9 @@ class MTDEnv(gym.Env):
         if invalid_action[1]:
             reward += rewards["invalid_action"]
             self._invalid_action_counter[1] += 1
-            switch_detection_system = 0
+            switch_prevention_system = 0
 
-        self._last_action = [restart_node, switch_detection_system]
+        self._last_action = [restart_node, switch_prevention_system]
 
         # --------------- eval action --------------- #
         if restart_node:
@@ -223,29 +223,29 @@ class MTDEnv(gym.Env):
         else:
             self._null_action_counter[0] += 1
 
-        if switch_detection_system:
-            self._locked_detection_systems[switch_detection_system] = self._detection_systems_pause
+        if switch_prevention_system:
+            self._locked_prevention_systems[switch_prevention_system] = self._prevention_systems_pause
 
-            detection_systems[switch_detection_system-1].reset_prob()
-            reward += rewards["switch_detection_system"]
+            prevention_systems[switch_prevention_system-1].reset_prob()
+            reward += rewards["switch_prevention_system"]
         else:
             self._null_action_counter[1] += 1
 
         # ---------------- simulate ---------------- #
         self._attacker_pos.update_probs()
 
-        # Detection System catching attacker (unless already in honeypot)
+        # Prevention System catching attacker (unless already in honeypot)
         caught = False
-        detection_system = self._attacker_pos.get_detection_system()
-        if detection_system and not self._attacker_pos.is_honeypot():
-            if detection_system.get_prob() > random.random():
+        prevention_system = self._attacker_pos.get_prevention_system()
+        if prevention_system and not self._attacker_pos.is_honeypot():
+            if prevention_system.get_prob() > random.random():
                 obs = self._attacker_pos.get_index()
-                self._attacker_pos = detection_system.caught_attacker()
+                self._attacker_pos = prevention_system.caught_attacker()
                 caught = True
 
-        # Attacker is in honeypot -> Detection System gets better
+        # Attacker is in honeypot -> Prevention System gets better
         if self._attacker_pos.is_honeypot():
-            self._attacker_pos.get_detection_system().learn()
+            self._attacker_pos.get_prevention_system().learn()
             obs = self._attacker_pos.get_index()
 
         # Attacker getting into next node, only possible if not caught
@@ -302,7 +302,7 @@ class MTDEnv(gym.Env):
             restarted = "-"
 
         if self._last_action[1]:
-            switched = detection_systems[self._last_action[1]].get_name()
+            switched = prevention_systems[self._last_action[1]].get_name()
         else:
             switched = "-"
 

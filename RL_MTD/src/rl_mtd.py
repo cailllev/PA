@@ -98,7 +98,7 @@ import math
 
 def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, simulations_count=20,
          simulate_only_one=False, graph="simple_webservice", attack="professional",
-         only_nodes=False, only_detection_systems=False, nodes_pause=1, detection_systems_pause=1):
+         only_nodes=False, only_prevention_systems=False, nodes_pause=1, prevention_systems_pause=1):
     # type: (str, bool, int, int, bool, str, str, bool, bool, int, int) -> None
     """
     simulates (and trains) rl agents and own agents (defender2000, random and static) on MTDEnv and writes the results 
@@ -110,19 +110,19 @@ def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, si
     :param simulate_only_one: False or None -> simulate all; A2C -> simulate only A2C and write results to temp file
     :param graph: the name of the graph as in config/attack_graphs.json
     :param attack: the name of the attack as in config/attack_graphs.json[graph][attacks]
-    :param only_nodes: only able to restart nodes, detection systems are fixed
-    :param only_detection_systems: only able to switch detection systems, nodes are fixed
+    :param only_nodes: only able to restart nodes, prevention systems are fixed
+    :param only_prevention_systems: only able to switch prevention systems, nodes are fixed
     :param nodes_pause: pause between same node restarts (1=every step possible)
-    :param detection_systems_pause: pause between same detection system switches (1=every step possible)
+    :param prevention_systems_pause: pause between same prevention system switches (1=every step possible)
     """
 
     print("\nConfig:")
     print(f"Graph Name:                {graph}")
     print(f"Attack Name:               {attack}")
     print(f"Only Nodes:                {only_nodes}")
-    print(f"Only Detection Systems:    {only_detection_systems}")
+    print(f"Only Prevention Systems:   {only_prevention_systems}")
     print(f"Nodes Pause:               {nodes_pause}")
-    print(f"Detection Systems Pause:   {detection_systems_pause}")
+    print(f"Prevention Systems Pause:  {prevention_systems_pause}")
 
     # ------------------------- const ------------------------- #
     learn_steps_exponent = round(math.log10(learn_steps))
@@ -144,7 +144,7 @@ def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, si
         os.mkdir(parameters_folder)
 
     set_config(graph, attack)
-    env = MTDEnv(only_nodes, only_detection_systems, nodes_pause, detection_systems_pause)
+    env = MTDEnv(only_nodes, only_prevention_systems, nodes_pause, prevention_systems_pause)
 
     # only to learn; Defender2000, Random and Static are added later
     # after 50 steps the agent updates it policy (it learns each 50 steps)
@@ -222,7 +222,7 @@ def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, si
     best_avg_reward = [-1000, random]
 
     # add non rl algorithms (random, defender2000 and static) for evaluation
-    algorithms[defender2000] = Defender2000(only_nodes, only_detection_systems, nodes_pause, detection_systems_pause)
+    algorithms[defender2000] = Defender2000(only_nodes, only_prevention_systems, nodes_pause, prevention_systems_pause)
     algorithms[random] = random
     algorithms[static] = static
 
@@ -253,19 +253,19 @@ def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, si
     def run_random_simulation():
         env.reset()
         done = False
-        locked_nodes, locked_detection_systems = create_locked_lists(*env.action_space.nvec)
+        locked_nodes, locked_prevention_systems = create_locked_lists(*env.action_space.nvec)
 
         while not done:
             subtract_one(locked_nodes)
-            subtract_one(locked_detection_systems)
+            subtract_one(locked_prevention_systems)
 
             # create new action until value in locked list is 0 and 0, i.e. no pause
             action = [0, 0]
 
-            if not only_detection_systems:
+            if not only_prevention_systems:
                 action[0] = choose_random_from_list(locked_nodes, nodes_pause)
             if not only_nodes:
-                action[1] = choose_random_from_list(locked_detection_systems, detection_systems_pause)
+                action[1] = choose_random_from_list(locked_prevention_systems, prevention_systems_pause)
 
             # do action on model
             obs, _, done, _ = env.step(action)
@@ -377,9 +377,9 @@ def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, si
     f.write(f"Graph Name:                {graph}\n")
     f.write(f"Attack Name:               {attack}\n")
     f.write(f"Only Nodes:                {only_nodes}\n")
-    f.write(f"Only Detection Systems:    {only_detection_systems}\n")
+    f.write(f"Only Prevention Systems:   {only_prevention_systems}\n")
     f.write(f"Nodes Pause:               {nodes_pause}\n")
-    f.write(f"Detection Systems Pause:   {detection_systems_pause}\n")
+    f.write(f"Prevention Systems Pause:  {prevention_systems_pause}\n")
 
     for algorithm, model in algorithms.items():
         if algorithm not in non_rl:
@@ -446,12 +446,13 @@ def main(parameters_folder="parameters/tests", learn=True, learn_steps=10**4, si
 
 if __name__ == "__main__":
     main("parameters/tests/",
-         learn=True,
+         learn=False,
          learn_steps=10 ** 5,
          graph="simple_webservice",
          attack="professional",
-         simulations_count=20,
+         simulations_count=5,
+         simulate_only_one="Defender2000",
          only_nodes=False,
-         only_detection_systems=False,
+         only_prevention_systems=False,
          nodes_pause=1,
-         detection_systems_pause=1)
+         prevention_systems_pause=1)

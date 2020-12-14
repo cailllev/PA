@@ -6,9 +6,9 @@ Steps per Simulation:      5000
 Graph Name:                simple_webservice
 Attack Name:               script_kiddies
 Only Nodes:                True
-Only Detection Systems:    False
+Only Prevention Systems:   False
 Nodes Pause:               1
-Detection Systems Pause:   1
+Prevention Systems Pause:  1
 *********************************************************************
 Simulation Type:          A2C
 Learning Time:            755.5 sec

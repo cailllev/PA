@@ -11,8 +11,8 @@ def in_init_state(g):
             if prob["init"] != prob["current"]:
                 return False
 
-    for detection_system in g.get_detection_systems():
-        if detection_system.get_prob() != detection_system.get_init_prob():
+    for prevention_system in g.get_prevention_systems():
+        if prevention_system.get_prob() != prevention_system.get_init_prob():
             return False
 
     return True
@@ -60,8 +60,8 @@ class MTDEnvTest(unittest.TestCase):
         env.step([1, 1])
         self.assertEqual(env.get_last_action(), [0, 1])
 
-    def test_pause_detection_systems(self):
-        env = m.MTDEnv(detection_systems_pause=3)
+    def test_pause_prevention_systems(self):
+        env = m.MTDEnv(prevention_systems_pause=3)
         env.reset()
 
         env.step([1, 1])
@@ -76,7 +76,7 @@ class MTDEnvTest(unittest.TestCase):
         self.assertEqual(env.get_last_action(), [1, 0])
 
     def test_pause_both(self):
-        env = m.MTDEnv(nodes_pause=3, detection_systems_pause=3)
+        env = m.MTDEnv(nodes_pause=3, prevention_systems_pause=3)
         env.reset()
 
         env.step([1, 1])
@@ -107,8 +107,8 @@ class MTDEnvTest(unittest.TestCase):
         self.assertEqual(env.get_last_action(), [0, 0])
         env.reset()
 
-    def test_only_detection_systems(self):
-        env = m.MTDEnv(only_detection_systems=True)
+    def test_only_prevention_systems(self):
+        env = m.MTDEnv(only_prevention_systems=True)
         env.reset()
 
         env.step([1, 1])
@@ -124,9 +124,9 @@ class MTDEnvTest(unittest.TestCase):
         self.assertEqual(env.get_last_action(), [0, 0])
         env.reset()
 
-    # disable both node restarts and detection system switches
+    # disable both node restarts and prevention system switches
     def test_static(self):
-        env = m.MTDEnv(only_nodes=True, only_detection_systems=True)
+        env = m.MTDEnv(only_nodes=True, only_prevention_systems=True)
         env.reset()
 
         env.step([1, 1])

@@ -19,6 +19,6 @@ for i in range(3, 8):
              attack="professional",
              simulations_count=20,
              only_nodes=False,
-             only_detection_systems=False,
+             only_prevention_systems=False,
              nodes_pause=1,
-             detection_systems_pause=1)
+             prevention_systems_pause=1)

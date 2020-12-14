@@ -9,157 +9,158 @@ pip install stable_baselines3
 pip install gym
 ```
 ## running given code 
-1. download this repo (https://github.zhaw.ch/cailllev/PA_MTD/) and go to folder RL_MTD
-2. possible runs...
-    - run just once (default config includes ~5min of training and then simulates all algos: ```A2C PPO Defender2000 Random Static```:
-        - `` src.rl_mtd `` => run can be configured at main call at line 447 
-    - run multiple times with different lengths of training sessions (1sec ... 4h):
-        - `` src.runner `` => runs can be configured at main call at line 15
-    - default output of `` src.rl_mtd ``
+download this repo (https://github.zhaw.ch/cailllev/PA_MTD/) and go to folder RL_MTD
+  - run just once (default config includes ~5min of training and then simulates all algos
+    - src.rl_mtd  => run can be configured at main call at line 447
+  - run multiple times with different lengths of training sessions (1sec ... 4h):
+    - src.runner => runs can be configured at main call at line 15 
+
+
+default output of `` src.rl_mtd ``
 ```
 Config:
 Graph Name:                simple_webservice
 Attack Name:               professional
 Only Nodes:                False
-Only Detection Systems:    False
+Only Prevention Systems:   False
 Nodes Pause:               1
-Detection Systems Pause:   1
+Prevention Systems Pause:  1
 *********************************************
 Learning A2C, PPO algorithms.
 *********************************************
 Learning A2C.
 No learned parameters found, start from scratch.
-10000 steps to learn, with updates to policy each 50 steps.
-Start:              05:06:25.
-Estimated finish:   05:06:34.
+100000 steps to learn, with updates to policy each 50 steps.
+Start:              Monday 13:31:11.
+Estimated finish:   Monday 13:32:41.
 ...
-Actual finish:      05:06:40.
+Actual finish:      Monday 13:32:28.
 *********************************************
 Learning PPO.
 No learned parameters found, start from scratch.
-10000 steps to learn, with updates to policy each 50 steps.
-Start:              05:06:40.
-Estimated finish:   05:06:58.
+100000 steps to learn, with updates to policy each 50 steps.
+Start:              Monday 13:32:28.
+Estimated finish:   Monday 13:35:28.
 ...
-Actual finish:      05:07:06.
+Actual finish:      Monday 13:34:56.
 *********************************************
-Prepared to simulate A2C, PPO, Defender2000, Random, Static with 20 simulations.
-Start:              05:07:06.
-Estimated finish:   05:08:58.
+Prepared to simulate A2C, PPO, Defender2000, Random, Static with 5 simulations.
+Start:              Monday 13:34:56.
+Estimated finish:   Monday 13:35:24.
 ...
 Start simulating A2C.
-20 simulations done.
+5 simulations done.
 Start simulating PPO.
-20 simulations done.
+5 simulations done.
 Start simulating Defender2000.
-20 simulations done.
+5 simulations done.
 Start simulating Random.
-20 simulations done.
+5 simulations done.
 Start simulating Static.
-20 simulations done.
-Actual finish:      05:08:32.
+5 simulations done.
+Actual finish:      Monday 13:35:22.
 
 Printing file content:
 
 *********************************************************************
 Starting Simulation Types: A2C, PPO, Defender2000, Random, Static
-Simulations per Type:      20
+Simulations per Type:      5
 Steps per Simulation:      5000
 ---------------------------------------------------------------------
 Graph Name:                simple_webservice
 Attack Name:               professional
 Only Nodes:                False
-Only Detection Systems:    False
+Only Prevention Systems:   False
 Nodes Pause:               1
-Detection Systems Pause:   1
+Prevention Systems Pause:  1
 *********************************************************************
 Simulation Type:          A2C
-Learning Time:            15.4 sec
+Learning Time:            77.4 sec
 ---------------------------------------------------------------------
-Avg steps:                1094.1
-Avg reward/step:          42.824
-Avg null action ratio:    [0.162, 0.179]
+Avg steps:                5000.0
+Avg reward/step:          52.602
+Avg null action ratio:    [0.009, 0.0]
 Avg invalid actions:      [0.0, 0.0]
 
-Min steps:                146
-Max steps:                3282
-
-Defender wins:            0
-Attacker wins:            20
-
-Steps each sim:           [3282, 579, 1066, 198, 3120, 1226, 2575, 154, 434, 593, 1031, 695, 873, 706, 1260, 198, 973, 328, 146, 2445]
-Reward each sim:          [143687, 24906, 45810, 8050, 135131, 53874, 110028, 5901, 17087, 24581, 43360, 28869, 37063, 30323, 52747, 8508, 42120, 12729, 5700, 106604]
-*********************************************************************
-Simulation Type:          PPO
-Learning Time:            26.2 sec
----------------------------------------------------------------------
-Avg steps:                3394.65
-Avg reward/step:          48.27
-Avg null action ratio:    [0.133, 0.096]
-Avg invalid actions:      [0.0, 0.0]
-
-Min steps:                24
+Min steps:                5000
 Max steps:                5000
 
-Defender wins:            8
-Attacker wins:            12
+Defender wins:            5
+Attacker wins:            0
 
-Steps each sim:           [1811, 5000, 137, 5000, 5000, 4691, 771, 4254, 3128, 4482, 24, 1562, 5000, 5000, 3266, 5000, 5000, 5000, 3432, 335]
-Reward each sim:          [86887, 242894, 5944, 241324, 240777, 224464, 36983, 204026, 150812, 214845, 593, 74743, 241922, 244354, 157064, 242941, 243078, 241231, 166343, 15946]
+Steps each sim:           [5000, 5000, 5000, 5000, 5000]
+Reward each sim:          [262704, 263129, 262702, 263206, 263299]
+*********************************************************************
+Simulation Type:          PPO
+Learning Time:            147.5 sec
+---------------------------------------------------------------------
+Avg steps:                5000.0
+Avg reward/step:          53.308
+Avg null action ratio:    [0.175, 0.004]
+Avg invalid actions:      [0.0, 0.0]
+
+Min steps:                5000
+Max steps:                5000
+
+Defender wins:            5
+Attacker wins:            0
+
+Steps each sim:           [5000, 5000, 5000, 5000, 5000]
+Reward each sim:          [267011, 266219, 266464, 266399, 266605]
 *********************************************************************
 Simulation Type:          Defender2000
 Learning Time:            0 sec
 ---------------------------------------------------------------------
-Avg steps:                169.05
-Avg reward/step:          34.85
-Avg null action ratio:    [0.103, 0.288]
+Avg steps:                150.2
+Avg reward/step:          34.441
+Avg null action ratio:    [0.083, 0.268]
 Avg invalid actions:      [0.0, 0.0]
 
-Min steps:                12
-Max steps:                818
+Min steps:                71
+Max steps:                316
 
 Defender wins:            0
-Attacker wins:            20
+Attacker wins:            5
 
-Steps each sim:           [256, 14, 80, 89, 15, 141, 345, 360, 182, 66, 818, 140, 30, 161, 16, 114, 155, 250, 12, 137]
-Reward each sim:          [8913, 4, 2540, 2821, 3, 4567, 12388, 13402, 6275, 1694, 30738, 4980, 759, 5690, 170, 3731, 5481, 8967, 3, 4703]
+Steps each sim:           [82, 71, 316, 126, 156]
+Reward each sim:          [2415, 2035, 11524, 4549, 5342]
 *********************************************************************
 Simulation Type:          Random
 Learning Time:            0 sec
 ---------------------------------------------------------------------
-Avg steps:                104.55
-Avg reward/step:          28.431
-Avg null action ratio:    [0.131, 0.336]
+Avg steps:                80.4
+Avg reward/step:          27.557
+Avg null action ratio:    [0.129, 0.326]
 Avg invalid actions:      [0.0, 0.0]
 
-Min steps:                7
-Max steps:                264
+Min steps:                39
+Max steps:                172
 
 Defender wins:            0
-Attacker wins:            20
+Attacker wins:            5
 
-Steps each sim:           [128, 96, 9, 163, 74, 114, 185, 41, 93, 53, 197, 30, 92, 216, 71, 7, 136, 264, 54, 68]
-Reward each sim:          [4059, 2518, -210, 5184, 1853, 3436, 6238, 736, 2719, 1181, 5845, 579, 1901, 7341, 1726, -271, 3741, 7692, 1047, 2134]
+Steps each sim:           [90, 59, 42, 39, 172]
+Reward each sim:          [2585, 1292, 733, 1010, 5458]
 *********************************************************************
 Simulation Type:          Static
 Learning Time:            0 sec
 ---------------------------------------------------------------------
-Avg steps:                21.5
-Avg reward/step:          6.395
+Avg steps:                14.0
+Avg reward/step:          -7.143
 Avg null action ratio:    [1.0, 1.0]
 Avg invalid actions:      [0.0, 0.0]
 
-Min steps:                5
-Max steps:                46
+Min steps:                10
+Max steps:                20
 
 Defender wins:            0
-Attacker wins:            20
+Attacker wins:            5
 
-Steps each sim:           [25, 8, 13, 18, 19, 25, 8, 29, 43, 10, 46, 19, 26, 19, 29, 9, 12, 5, 38, 29]
-Reward each sim:          [250, -220, -220, -170, 40, 300, -170, 240, 480, -200, 810, 240, 160, 290, 340, -210, 20, -300, 780, 290]
+Steps each sim:           [10, 14, 20, 13, 13]
+Reward each sim:          [-300, -210, 250, -70, -170]
 *********************************************************************
-PPO is the most effective algorithm with 3394.65 avg steps.
-PPO is the most efficient algorithm with 48.27 avg reward/step.
+A2C is the most effective algorithm with 5000.0 avg steps.
+PPO is the most efficient algorithm with 53.308 avg reward/step.
 
 
 Process finished with exit code 0
@@ -168,13 +169,13 @@ Process finished with exit code 0
 1. open config/attack_graphs.json
 2. under simple webservice one can configure:
     - nodes: what services run in their network (and how they are connected)
-    - detection systems: what detection systems are in place
+    - prevention systems: what prevention systems are in place
     - attacks: how likely an attacker gains control of such a service
     - hints
-        - under "nodes" and "detection systems" are the names of probabilities, in "attacks" are the names and the 
+        - under "nodes" and "prevention systems" are the names of probabilities, in "attacks" are the names and the 
         corresponding values of probabilities
-        - all names of probabilities in "nodes" and "detection systems" have to be listed in "attacks", all probabilities in 
-        "attacks" have to be used in "nodes" or "detection systems"
+        - all names of probabilities in "nodes" and "prevention systems" have to be listed in "attacks", all probabilities in 
+        "attacks" have to be used in "nodes" or "prevention systems"
 3. to check if a configuration can be parsed, do:
     - run ``` src.model.graph ```
     - if no errors, the network can be parsed; but that does not guarantee the network makes sense

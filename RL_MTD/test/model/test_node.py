@@ -44,7 +44,7 @@ class NodeTest(unittest.TestCase):
         self.assertEqual(node.get_index(), 0)
         self.assertEqual(node.get_prev(), None)
         self.assertEqual(len(node.get_probs()), 0)
-        self.assertEqual(node.get_detection_system(), None)
+        self.assertEqual(node.get_prevention_system(), None)
         self.assertEqual(node.get_progress_level(), 0)
         node.reset()
 

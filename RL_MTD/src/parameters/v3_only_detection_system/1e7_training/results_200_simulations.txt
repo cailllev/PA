@@ -6,9 +6,9 @@ Steps per Simulation:      5000
 Graph Name:                simple_webservice
 Attack Name:               professional
 Only Nodes:                False
-Only Detection Systems:    True
+Only Prevention Systems:   True
 Nodes Pause:               1
-Detection Systems Pause:   1
+Prevention Systems Pause:  1
 *********************************************************************
 Simulation Type:          A2C
 Learning Time:            8218.6 sec

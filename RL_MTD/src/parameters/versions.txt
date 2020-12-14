@@ -10,7 +10,7 @@ Below are the summaries for each version: <p>
   - random: avg steps 53, avg reward -23; static: avg steps 4.1, avg reward: -50
 ```
 rewards
-  "switch_detection_system": -2
+  "switch_prevention_system": -2
   "restart_node": -5
   "progression": -10
   "attacker_wins": -100
@@ -30,7 +30,7 @@ rewards
     32.8. Just lucky? 10 and 100 are more like the others
 ```
 rewards
-  "switch_detection_system": -2
+  "switch_prevention_system": -2
   "restart_node": -5
   "progression": -10
   "attacker_wins": -100
@@ -54,7 +54,7 @@ rewards
 - add second attack to simulate "wrong" learning
 ```
 "rewards": 
-  "switch_detection_system": -2,
+  "switch_prevention_system": -2,
   "restart_node": -5,
   "progression": -50,
   "attacker_wins": -100,

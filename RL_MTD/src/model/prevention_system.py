@@ -3,11 +3,11 @@ import src.model.node as n
 from typing import Dict, List
 
 
-def get_null_detection_system():
-    return DetectionSystem("null", {"init": 0, "de": 0}, n.get_null_node(), [n.get_null_node()])
+def get_null_prevention_system():
+    return PreventionSystem("null", {"init": 0, "de": 0}, n.get_null_node(), [n.get_null_node()])
 
 
-class DetectionSystem:
+class PreventionSystem:
     def __init__(self, name, probs, reset_node, after_nodes):
         # type: (str, Dict[str, float], n.Node, List[str]) -> None
         """
