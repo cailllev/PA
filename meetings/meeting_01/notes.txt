@@ -2,7 +2,7 @@ IT Sec Group -> EU 5G Project -> develop Sec Solution (Networks like 5G)
 Gür: Group Leader
 MTD for some 5G Network functions -> PA Target
 
-MTD: no disadvantage for defender with attack surface configuration, no scanning with low cost effort
+MTD: no disadvantage for defender with attack surface configuration, no scanning with low-cost effort
 more difficult to understand the system
 
 2: change ports for network services
@@ -10,23 +10,23 @@ more difficult to understand the system
 
 -> Decision Problem
 
-Rule based approches, simple or complex rules to make decisions
+Rule based approaches, simple or complex rules to make decisions
 ML for decisions -> Reinforcement Learning (trial and error)
 
 make a model for the problem
 most likely python library for RL
 
 PA Goals: 
-learn MTD, RL
-implement MTD in simulated enviroment with research grade
-test it, investigate overhead -> performance
+-learn MTD, RL
+-implement MTD in simulated enviroment with research grade
+-test it, investigate overhead -> performance
 
 next meeeting: 
-small presentation, what we found, what would be suitable, what we further look into
-timetable
-repository
-word or latex for PA Report
+-small presentation, what we found, what would be suitable, what we further look into
+-timetable
+-repository
+-word or latex for PA Report
 
-meeting fixed on wednesdays, 8:30
+meeting fixed on Wednesdays, 8:30
 
 surveys & papers for research in MTD from Mr. Gür

@@ -1,7 +1,7 @@
 PA-Thesis Format
  - main part in German
  - small "summary" of Thesis in English
- - Code-Docu in English
+ - Code-Documentation in English
  - UI in English
 
 Research
@@ -12,7 +12,7 @@ Research
 
 Product
  - RL for MTD (Network- / Cybersecurity)
- - pretty open defined Use-Cases (Networksec)
+ - pretty open defined Use-Cases (Network Sec)
  - 3 Aspects
    - MTD
    - RL
@@ -23,13 +23,13 @@ Tasks
    - what do we do, when do we do it
    - small understanding of whole subject
  
- - read up on MTD, RL, Networksec
+ - read up on MTD, RL, Network Sec
  - create "general" Use-Cases
  - research, read surveys
- - play arround with tools / frameworks
+ - play around with tools / frameworks
  ------------- halftime ------------------
  - decide what surveys are useful
- - sort out Use-Cases, choose useful tools (surveys / open source tools)
+ - sort out Use-Cases, choose useful tools (surveys / open-source tools)
  - define what our product is really about (what methods for what)
  - set up tools, pick specific Use-Cases for further / final work
  
