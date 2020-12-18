@@ -1,7 +1,7 @@
 # Setup Project
 ## requirements
 - python version 3.8
-  - everything tested with 3.8.5
+  - everything tested with 3.8.5 and all python libraries in venv
 - pip installs
 ```
 pip install torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
