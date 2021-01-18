@@ -1,5 +1,5 @@
-# PA_MTD
-This is a repository for work on the PA MTD and for information exchange between students and supervisors.
+# PA
+This is a repository for work on the PA and for information exchange between students and supervisors.
 
 
 The paper is the PA_MTD.pdf.
