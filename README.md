@@ -1,4 +1,4 @@
-# Projekt Arbeit (pre Bachelor Thesis)
+# Projekt Arbeit (pre bachelor's thesis)
 This is a repository for work on the PA and for information exchange between students and supervisors.
 
 
